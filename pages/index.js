@@ -114,7 +114,59 @@ export default function Home() {
      { name: 'MEGDAN KAJSIJA', unit: 'ml', noVariant: true },
      { name: 'MEGDAN GROŽĐE', unit: 'ml', noVariant: true },
      { name: 'STOMAKLIJA', unit: 'ml', noVariant: true }
-   ]
+   ],
+  'BELA VINA': [
+ { name: 'FILIGRAN CHARDONNAY', unit: 'kom', noVariant: true },
+ { name: 'KOVAČEVIĆ CHARDONNAY', unit: 'kom', noVariant: true },
+ { name: 'RADOVANOVIĆ CHARDONNAY', unit: 'kom', noVariant: true },
+ { name: 'MATALJ SOUVIGNON', unit: 'kom', noVariant: true },
+ { name: 'MATALJ CHARDONNAY', unit: 'kom', noVariant: true },
+ { name: 'ALEKSANDROVIĆ TEMA', unit: 'kom', noVariant: true },
+ { name: 'CILIĆ ONYX BELI', unit: 'kom', noVariant: true },
+ { name: 'ĐEURIĆ AKSIOM BELI', unit: 'kom', noVariant: true },
+ { name: 'SPASIĆ LEKCIJA TAMJANIKA', unit: 'kom', noVariant: true },
+ { name: 'RUBIN SAUV BLANC', unit: 'kom', noVariant: true },
+ { name: 'RUBIN CHARDONAY', unit: 'kom', noVariant: true },
+ { name: 'RUBIN MUSCAT', unit: 'kom', noVariant: true },
+ { name: 'LA SASTRERIA BELO', unit: 'kom', noVariant: true },
+ { name: 'SAVIĆ RIZLING', unit: 'kom', noVariant: true },
+ { name: 'JOVIĆ CHARDONNAY', unit: 'kom', noVariant: true }
+],
+'CRVENA VINA': [
+ { name: 'RUBIN MERLOT', unit: 'kom', noVariant: true },
+ { name: 'FILIGRAN CABERNET', unit: 'kom', noVariant: true }, 
+ { name: 'IZBA JOVAN MERLOT', unit: 'kom', noVariant: true },
+ { name: 'RADOVANOVIĆ CABERNET', unit: 'kom', noVariant: true },
+ { name: 'RADOVANOVIĆ SUVIGNON', unit: 'kom', noVariant: true },
+ { name: 'CILIĆ ONYX CRVENO', unit: 'kom', noVariant: true },
+ { name: 'ĐEURIĆ AKSIOM CRVENI', unit: 'kom', noVariant: true },
+ { name: 'SPASIĆ DESPOT', unit: 'kom', noVariant: true },
+ { name: 'MATALJ KREMEN', unit: 'kom', noVariant: true },
+ { name: 'ALEKSANDROVIĆ PROKUPAC', unit: 'kom', noVariant: true },
+ { name: 'RUBIN CABERNET', unit: 'kom', noVariant: true },
+ { name: 'RUBIN DOB.BAR. SUV', unit: 'kom', noVariant: true },
+ { name: 'RUBIN DOB.BAR. CAB', unit: 'kom', noVariant: true },
+ { name: 'RUBIN AMANTE CARMEN', unit: 'kom', noVariant: true },
+ { name: 'DESPOTIKA NEMIR', unit: 'kom', noVariant: true },
+ { name: 'JOVIĆ CABERNET', unit: 'kom', noVariant: true },
+ { name: 'JOVIĆ VRANAC', unit: 'kom', noVariant: true },
+ { name: 'LA SASTRERIA CRVENO', unit: 'kom', noVariant: true },
+ { name: 'CILIĆ MORAVA', unit: 'kom', noVariant: true },
+ { name: 'CILIĆ cabernet & merlot', unit: 'kom', noVariant: true },
+ { name: 'VINUM FRANCOVKA', unit: 'kom', noVariant: true },
+ { name: 'TEMET BURGUNDAC', unit: 'kom', noVariant: true },
+ { name: 'IVANOVIĆ PROKUPAC', unit: 'kom', noVariant: true },
+ { name: 'CRNA OVCA', unit: 'kom', noVariant: true }
+],
+'ROZE VINA': [
+ { name: 'RUBIN ROSE 0,7', unit: 'kom', noVariant: true },
+ { name: 'RUBIN VRONSKY 0,7', unit: 'kom', noVariant: true }
+],
+'VINA 0,187L': [
+ { name: 'RUBIN CHARDONNAY 0,187', unit: 'kom', noVariant: true },
+ { name: 'RUBIN VRANAC 0,187', unit: 'kom', noVariant: true },
+ { name: 'RUBIN ROSE 0,187', unit: 'kom', noVariant: true }
+]
  };
 
  const updateOrder = (item, value) => {
