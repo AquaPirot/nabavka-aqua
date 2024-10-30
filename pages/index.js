@@ -214,93 +214,96 @@ export default function Home() {
    return message;
  };
 
- return (
-   <div className="min-h-screen bg-gray-100 p-4">
-     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow">
-       <div className="bg-blue-600 text-white p-4 rounded-t-lg">
-         <h1 className="text-xl font-bold text-center">Narudžba pića</h1>
+return (
+ <div className="min-h-screen bg-gray-50 p-4">
+   <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-xl">
+     <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white p-6 rounded-t-lg shadow-lg">
+       <h1 className="text-2xl font-bold text-center">Narudžba pića</h1>
+     </div>
+
+     <div className="p-6 space-y-6">
+       {Object.entries(categories).map(([category, items]) => (
+         <div key={category} className="border-2 border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+           <h2 className="font-bold mb-4 text-lg text-blue-900">{category}</h2>
+           <div className="space-y-3">
+             {items.map(item => (
+               <div key={item.name} 
+                    className="flex items-center gap-2 p-3 hover:bg-gray-50 rounded-lg border border-gray-100">
+                 <div className="flex-1 space-y-1">
+                   <div className="font-medium">{item.name}</div>
+                   {!item.noVariant && variants[item.name] && (
+                     <div className="text-sm text-gray-600">
+                       Varijanta: {variants[item.name]}
+                     </div>
+                   )}
+                 </div>
+                 <div className="flex items-center gap-3">
+                   {orders[item.name] > 0 && (
+                     <button
+                       onClick={() => updateOrder(item, (orders[item.name] || 0) - 1)}
+                       className="h-10 w-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm"
+                     >
+                       <Minus className="h-5 w-5" />
+                     </button>
+                   )}
+                   <input
+                     type="number"
+                     value={orders[item.name] || ''}
+                     onChange={(e) => updateOrder(item, parseInt(e.target.value) || 0)}
+                     className="w-16 text-center rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 p-2"
+                     placeholder="0"
+                   />
+                   <button
+                     onClick={() => updateOrder(item, (orders[item.name] || 0) + 1)}
+                     className="h-10 w-10 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm"
+                   >
+                     <Plus className="h-5 w-5" />
+                   </button>
+                 </div>
+               </div>
+             ))}
+           </div>
+         </div>
+       ))}
+
+       {/* Napomene */}
+       <div className="border-2 border-gray-200 rounded-lg p-4 shadow-sm">
+         <h2 className="font-bold mb-3 text-lg text-blue-900">Napomene</h2>
+         <textarea
+           value={notes}
+           onChange={(e) => setNotes(e.target.value)}
+           className="w-full h-24 p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+           placeholder="Dodatne napomene za narudžbu..."
+         />
        </div>
 
-       <div className="p-4 space-y-6">
-         {Object.entries(categories).map(([category, items]) => (
-           <div key={category} className="border rounded-lg p-4">
-             <h2 className="font-bold mb-3 text-lg">{category}</h2>
-             <div className="space-y-3">
-               {items.map(item => (
-                 <div key={item.name} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded">
-                   <div className="flex-1 space-y-1">
-                     <div>{item.name}</div>
-                     {!item.noVariant && variants[item.name] && (
-                       <div className="text-sm text-gray-600">
-                         Varijanta: {variants[item.name]}
-                       </div>
-                     )}
-                   </div>
-                   <div className="flex items-center gap-2">
-                     {orders[item.name] > 0 && (
-                       <button
-                         onClick={() => updateOrder(item, (orders[item.name] || 0) - 1)}
-                         className="h-8 w-8 flex items-center justify-center rounded bg-red-500 text-white hover:bg-red-600"
-                       >
-                         -
-                       </button>
-                     )}
-                     <input
-                       type="number"
-                       value={orders[item.name] || ''}
-                       onChange={(e) => updateOrder(item, parseInt(e.target.value) || 0)}
-                       className="w-16 text-center rounded border p-1"
-                       placeholder="0"
-                     />
-                     <button
-                       onClick={() => updateOrder(item, (orders[item.name] || 0) + 1)}
-                       className="h-8 w-8 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600"
-                     >
-                       +
-                     </button>
-                   </div>
-                 </div>
-               ))}
-             </div>
-           </div>
-         ))}
-
-         {/* Napomene */}
-         <div className="border rounded-lg p-4">
-           <h2 className="font-bold mb-3">Napomene</h2>
-           <textarea
-             value={notes}
-             onChange={(e) => setNotes(e.target.value)}
-             className="w-full h-24 p-2 border rounded"
-             placeholder="Dodatne napomene za narudžbu..."
-           />
-         </div>
-
-         {/* Dugmad za akcije */}
-         <div className="flex gap-4">
-           <button
-             onClick={() => {
-               navigator.clipboard.writeText(generateOrder());
-               alert('Narudžba kopirana!');
-             }}
-             className="flex-1 bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600"
-             disabled={Object.keys(orders).length === 0}
-           >
-             Kopiraj
-           </button>
-           <button
-             onClick={() => {
-               const order = generateOrder();
-               window.open(`https://wa.me/?text=${encodeURIComponent(order)}`);
-             }}
-             className="flex-1 bg-green-500 text-white rounded-lg px-4 py-2 hover:bg-green-600"
-             disabled={Object.keys(orders).length === 0}
-           >
-             WhatsApp
-           </button>
-         </div>
+       {/* Dugmad za akcije */}
+       <div className="flex gap-4 pt-4">
+         <button
+           onClick={() => {
+             navigator.clipboard.writeText(generateOrder());
+             alert('Narudžba kopirana!');
+           }}
+           className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg px-6 py-3 hover:from-blue-700 hover:to-blue-800 transition-all shadow-md flex items-center justify-center gap-2"
+           disabled={Object.keys(orders).length === 0}
+         >
+           <Copy className="h-5 w-5" />
+           Kopiraj
+         </button>
+         <button
+           onClick={() => {
+             const order = generateOrder();
+             window.open(`https://wa.me/?text=${encodeURIComponent(order)}`);
+           }}
+           className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg px-6 py-3 hover:from-green-700 hover:to-green-800 transition-all shadow-md flex items-center justify-center gap-2"
+           disabled={Object.keys(orders).length === 0}
+         >
+           <Send className="h-5 w-5" />
+           WhatsApp
+         </button>
        </div>
      </div>
    </div>
- );
+ </div>
+);
 }
