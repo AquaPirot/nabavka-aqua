@@ -160,6 +160,7 @@ export default function Home() {
 ],
 'ROZE VINA': [
  { name: 'RUBIN ROSE 0,7', unit: 'kom', noVariant: true },
+ { name: 'MATALJ DUSICA', unit: 'kom', noVariant: true },
  { name: 'RUBIN VRONSKY 0,7', unit: 'kom', noVariant: true }
 ],
 'VINA 0,187L': [
