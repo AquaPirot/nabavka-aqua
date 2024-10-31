@@ -11,7 +11,7 @@ export default function AdminLogin() {
     // Demo admin kredencijali
     if (username === 'admin' && password === 'admin123') {
       localStorage.setItem('isAdmin', 'true');
-      window.location.href = '/admin-dashboard';
+      window.location.href = '/admin/dashboard';
     } else {
       setError('Pogrešni admin kredencijali');
     }
