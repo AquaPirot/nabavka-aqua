@@ -8,8 +8,8 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategories, setActiveCategories] = useState(new Set());
   const [sortOption, setSortOption] = useState('default');
-  
-  const categories = {
+
+ const categories = {
     'TOPLI NAPICI': [
       { name: 'ESPRESSO', unit: 'gr', noVariant: true },
       { name: 'NES KAFA', unit: 'gr', noVariant: true },
@@ -195,4 +195,208 @@ export default function Home() {
     }
   };
 
-  const filteredAndSortedData = useM
+  const filteredAndSortedData = useMemo(() => {
+    let result = Object.entries(categories);
+
+    if (activeCategories.size > 0) {
+      result = result.filter(([category]) => activeCategories.has(category));
+    }
+
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      result = result.map(([category, items]) => [
+        category,
+        items.filter(item => item.name.toLowerCase().includes(searchLower))
+      ]).filter(([_, items]) => items.length > 0);
+    }
+
+    return result;
+  }, [categories, searchTerm, activeCategories]);
+
+  const updateOrder = (item, value) => {
+    if (value > 0) {
+      setOrders({...orders, [item.name]: value});
+    } else {
+      const newOrders = {...orders};
+      delete newOrders[item.name];
+      setVariants(prev => {
+        const newVariants = {...prev};
+        delete newVariants[item.name];
+        return newVariants;
+      });
+      setOrders(newOrders);
+    }
+  };
+
+  const updateVariant = (itemName, variant) => {
+    setVariants({...variants, [itemName]: variant});
+  };
+
+  const generateOrder = () => {
+    let message = `📋 NARUDŽBA ${new Date().toLocaleDateString('sr-RS')}\n\n`;
+    
+    Object.entries(categories).forEach(([category, items]) => {
+      const categoryOrders = items.filter(item => orders[item.name]);
+      if (categoryOrders.length > 0) {
+        message += `${category}\n`;
+        categoryOrders.forEach(item => {
+          let orderLine = `${orders[item.name]} × ${item.name}`;
+          if (variants[item.name]) {
+            orderLine += ` (${variants[item.name]})`;
+          }
+          message += `${orderLine}\n`;
+        });
+        message += '\n';
+      }
+    });
+
+    if (notes.trim()) {
+      message += `\nNAPOMENE:\n${notes}\n`;
+    }
+
+    const toggleCategory = (category) => {
+  const newCategories = new Set(activeCategories);
+  if (newCategories.has(category)) {
+    newCategories.delete(category);
+  } else {
+    newCategories.add(category);
+  }
+  setActiveCategories(newCategories);
+};
+
+    return message;
+  };
+
+return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8 rounded-t-2xl shadow-lg">
+          <h1 className="text-3xl font-bold text-center mb-4">Narudžba pića</h1>
+          
+          {/* Search bar */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Pretraži pića..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-3 pl-10 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+            <Search className="absolute left-3 top-3.5 text-gray-400 h-5 w-5" />
+          </div>
+
+          {/* Category filters */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {Object.keys(categories).map(category => (
+              <button
+                key={category}
+                onClick={() => toggleCategory(category)}
+                className={`px-3 py-1 rounded-full text-sm transition-all ${
+                  activeCategories.has(category)
+                    ? 'bg-white text-blue-600'
+                    : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-b-2xl shadow-xl p-6 space-y-6">
+          {filteredAndSortedData.map(([category, items]) => (
+            <div key={category} 
+                 className="border-2 border-gray-100 rounded-xl p-5 hover:border-blue-200 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                {getCategoryIcon(category)}
+                <h2 className="font-bold text-xl text-gray-800">{category}</h2>
+              </div>
+              <div className="space-y-3">
+                {items.map(item => (
+                  <div key={item.name} 
+                       className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-300">
+                    <div className="flex-1 space-y-1">
+                      <div className="font-medium text-gray-800">{item.name}</div>
+                      {!item.noVariant && (
+                        <select
+                          value={variants[item.name] || ''}
+                          onChange={(e) => updateVariant(item.name, e.target.value)}
+                          className="mt-1 text-sm text-gray-600 border rounded p-1"
+                        >
+                          <option value="">Izaberi varijantu</option>
+                          {item.variants?.map(variant => (
+                            <option key={variant} value={variant}>{variant}</option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {orders[item.name] > 0 && (
+                        <button
+                          onClick={() => updateOrder(item, (orders[item.name] || 0) - 1)}
+                          className="h-10 w-10 flex items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg"
+                        >
+                          <Minus className="h-5 w-5" />
+                        </button>
+                      )}
+                      <input
+                        type="number"
+                        value={orders[item.name] || ''}
+                        onChange={(e) => updateOrder(item, parseInt(e.target.value) || 0)}
+                        className="w-16 text-center rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 p-2"
+                        placeholder="0"
+                      />
+                      <button
+                        onClick={() => updateOrder(item, (orders[item.name] || 0) + 1)}
+                        className="h-10 w-10 flex items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {/* Napomene */}
+          <div className="border-2 border-gray-100 rounded-xl p-5">
+            <h2 className="font-bold mb-3 text-xl text-gray-800">Napomene</h2>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full h-24 p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              placeholder="Dodatne napomene za narudžbu..."
+            />
+          </div>
+
+          {/* Dugmad za akcije */}
+          <div className="flex gap-4 pt-4">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(generateOrder());
+                alert('Narudžba kopirana!');
+              }}
+              className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl px-6 py-4 hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 font-medium"
+              disabled={Object.keys(orders).length === 0}
+            >
+              <Copy className="h-5 w-5" />
+              Kopiraj narudžbu
+            </button>
+            <button
+              onClick={() => {
+                const order = generateOrder();
+                window.open(`https://wa.me/?text=${encodeURIComponent(order)}`);
+              }}
+              className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl px-6 py-4 hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 font-medium"
+              disabled={Object.keys(orders).length === 0}
+            >
+              <Send className="h-5 w-5" />
+              Pošalji na WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
