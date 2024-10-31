@@ -106,8 +106,8 @@ export default function Home() {
       { name: 'CAMPARI', unit: 'ml', noVariant: true },
       { name: 'MARTINI', unit: 'ml', noVariant: true },
       { name: 'RAMAZZOTTI', unit: 'ml', noVariant: true },
-      { name: 'OUZO', unit: 'ml', noVariant: true }
-      { name: 'HAVANA RUM', unit: 'ml', noVariant: true },
+      { name: 'OUZO', unit: 'ml', noVariant: true },
+      { name: 'HAVANA RUM', unit: 'ml', noVariant: true }
     ],
     'DOMAĆA ALKOHOLNA PIĆA': [
       { name: 'MEGDAN DUNJA', unit: 'ml', noVariant: true },
