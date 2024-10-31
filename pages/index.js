@@ -107,9 +107,9 @@ export default function Home() {
       { name: 'MARTINI', unit: 'ml', noVariant: true },
       { name: 'RAMAZZOTTI', unit: 'ml', noVariant: true },
       { name: 'OUZO', unit: 'ml', noVariant: true }
+      { name: 'HAVANA RUM', unit: 'ml', noVariant: true },
     ],
     'DOMAĆA ALKOHOLNA PIĆA': [
-      { name: 'HAVANA RUM', unit: 'ml', noVariant: true },
       { name: 'MEGDAN DUNJA', unit: 'ml', noVariant: true },
       { name: 'MEGDAN ŠLJIVA', unit: 'ml', noVariant: true },
       { name: 'MEGDAN VILJAMOVKA', unit: 'ml', noVariant: true },
@@ -227,7 +227,7 @@ export default function Home() {
   };
 
   const generateOrder = () => {
-    let message = `📋 NARUDŽBA ${new Date().toLocaleDateString('sr-RS')}\n\n`;
+    let message = `📋 TREBOVANJE ${new Date().toLocaleDateString('sr-RS')}\n\n`;
     
     Object.entries(categories).forEach(([category, items]) => {
       const categoryOrders = items.filter(item => orders[item.name]);
@@ -255,7 +255,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8 rounded-t-2xl shadow-lg">
-          <h1 className="text-3xl font-bold text-center mb-4">Narudžba pića</h1>
+          <h1 className="text-3xl font-bold text-center mb-4">Trebovanje pića</h1>
           
           {/* Search bar */}
           <div className="relative">
@@ -333,7 +333,7 @@ export default function Home() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full h-24 p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              placeholder="Dodatne napomene za narudžbu..."
+              placeholder="Dodatne napomene za trebovanje..."
             />
           </div>
 
@@ -342,13 +342,13 @@ export default function Home() {
             <button
               onClick={() => {
                 navigator.clipboard.writeText(generateOrder());
-                alert('Narudžba kopirana!');
+                alert('Trebovanje kopirano!');
               }}
               className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl px-6 py-4 hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 font-medium"
               disabled={Object.keys(orders).length === 0}
             >
               <Copy className="h-5 w-5" />
-              Kopiraj narudžbu
+              Kopiraj trebovanje
             </button>
             <button
               onClick={() => {
