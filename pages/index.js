@@ -200,18 +200,13 @@ export default function Home() {
       const searchLower = searchTerm.toLowerCase();
       result = result.map(([category, items]) => [
         category,
-        items
-
-        const searchLower = searchTerm.toLowerCase();
-      result = result.map(([category, items]) => [
-        category,
         items.filter(item => item.name.toLowerCase().includes(searchLower))
       ]).filter(([_, items]) => items.length > 0);
     }
 
     return result;
   }, [categories, searchTerm]);
-
+  
   const updateOrder = (item, value) => {
     if (value > 0) {
       setOrders({...orders, [item.name]: value});
