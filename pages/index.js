@@ -1,15 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { Minus, Plus, Copy, Send, Coffee, Wine, Beer, GlassWater, Search, SlidersHorizontal } from 'lucide-react';
+import { Minus, Plus, Copy, Send, Coffee, Wine, Beer, GlassWater, Search } from 'lucide-react';
 
 export default function Home() {
   const [orders, setOrders] = useState({});
   const [variants, setVariants] = useState({});
   const [notes, setNotes] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategories, setActiveCategories] = useState(new Set());
-  const [sortOption, setSortOption] = useState('default');
 
- const categories = {
+  const categories = {
     'TOPLI NAPICI': [
       { name: 'ESPRESSO', unit: 'gr', noVariant: true },
       { name: 'NES KAFA', unit: 'gr', noVariant: true },
@@ -198,12 +196,13 @@ export default function Home() {
   const filteredAndSortedData = useMemo(() => {
     let result = Object.entries(categories);
 
-    if (activeCategories.size > 0) {
-      result = result.filter(([category]) => activeCategories.has(category));
-    }
-
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
+      result = result.map(([category, items]) => [
+        category,
+        items
+
+        const searchLower = searchTerm.toLowerCase();
       result = result.map(([category, items]) => [
         category,
         items.filter(item => item.name.toLowerCase().includes(searchLower))
@@ -211,7 +210,7 @@ export default function Home() {
     }
 
     return result;
-  }, [categories, searchTerm, activeCategories]);
+  }, [categories, searchTerm]);
 
   const updateOrder = (item, value) => {
     if (value > 0) {
@@ -254,20 +253,10 @@ export default function Home() {
       message += `\nNAPOMENE:\n${notes}\n`;
     }
 
-    const toggleCategory = (category) => {
-  const newCategories = new Set(activeCategories);
-  if (newCategories.has(category)) {
-    newCategories.delete(category);
-  } else {
-    newCategories.add(category);
-  }
-  setActiveCategories(newCategories);
-};
-
     return message;
   };
 
-return (
+  return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8 rounded-t-2xl shadow-lg">
@@ -283,23 +272,6 @@ return (
               className="w-full p-3 pl-10 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
             <Search className="absolute left-3 top-3.5 text-gray-400 h-5 w-5" />
-          </div>
-
-          {/* Category filters */}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {Object.keys(categories).map(category => (
-              <button
-                key={category}
-                onClick={() => toggleCategory(category)}
-                className={`px-3 py-1 rounded-full text-sm transition-all ${
-                  activeCategories.has(category)
-                    ? 'bg-white text-blue-600'
-                    : 'bg-white/20 text-white hover:bg-white/30'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
           </div>
         </div>
 
