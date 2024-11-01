@@ -19,7 +19,7 @@ export default function AdminDashboard() {
     pib: ''
   });
 
-  const handleAddRestaurant = (e) => {
+    const handleAddRestaurant = (e) => {
     e.preventDefault();
     
     const code = `REST${String(restaurants.length + 1).padStart(3, '0')}`;
@@ -82,7 +82,7 @@ export default function AdminDashboard() {
     return restaurants.filter(r => r.active).length;
   };
 
-  return (
+    return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6">
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Modal za dodavanje restorana - ostaje isti */}
+      {/* Modal za dodavanje restorana */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
@@ -296,7 +296,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Modal za kredencijale - ostaje isti */}
+      {/* Modal za kredencijale */}
       {showCredsModal && newlyAddedRestaurant && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
@@ -370,9 +370,19 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Modal za uređivanje restorana */}
-      {showEditModal && editingRestaurant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font
+     {/* Modal za uređivanje restorana */}
+{showEditModal && editingRestaurant && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="bg-white rounded-xl p-6 w-full max-w-md">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Uredi restoran</h2>
+        <button 
+          onClick={() => {
+            setShowEditModal(false);
+            setEditingRestaurant(null);
+          }}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          <X className="h-6 w-6" />
+        </button>
+      </div>
