@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Copy, Plus } from 'lucide-react';
+import { Copy, Plus, X } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCredsModal, setShowCredsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
   const [newlyAddedRestaurant, setNewlyAddedRestaurant] = useState(null);
+  const [editingRestaurant, setEditingRestaurant] = useState(null);
+  const [deactivatingRestaurant, setDeactivatingRestaurant] = useState(null);
   const [restaurants, setRestaurants] = useState([]);
   const [newRestaurant, setNewRestaurant] = useState({
     name: '',
@@ -18,9 +22,7 @@ export default function AdminDashboard() {
   const handleAddRestaurant = (e) => {
     e.preventDefault();
     
-    // Generišemo jedinstveni kod za restoran
     const code = `REST${String(restaurants.length + 1).padStart(3, '0')}`;
-    // Generišemo random lozinku
     const password = Math.random().toString(36).slice(-8);
     
     const restaurantWithCode = {
@@ -32,9 +34,9 @@ export default function AdminDashboard() {
     };
 
     setRestaurants([...restaurants, restaurantWithCode]);
-    setNewlyAddedRestaurant(restaurantWithCode); // Čuvamo novi restoran za prikaz kredencijala
+    setNewlyAddedRestaurant(restaurantWithCode);
     setShowAddModal(false);
-    setShowCredsModal(true); // Prikazujemo modal sa kredencijalima
+    setShowCredsModal(true);
     setNewRestaurant({
       name: '',
       address: '',
@@ -43,6 +45,41 @@ export default function AdminDashboard() {
       email: '',
       pib: ''
     });
+  };
+
+  const handleEditRestaurant = (restaurant) => {
+    setEditingRestaurant(restaurant);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateRestaurant = (e) => {
+    e.preventDefault();
+    const updatedRestaurants = restaurants.map(rest => 
+      rest.code === editingRestaurant.code ? editingRestaurant : rest
+    );
+    setRestaurants(updatedRestaurants);
+    setShowEditModal(false);
+    setEditingRestaurant(null);
+  };
+
+  const handleDeactivateClick = (restaurant) => {
+    setDeactivatingRestaurant(restaurant);
+    setShowDeactivateModal(true);
+  };
+
+  const handleDeactivateConfirm = () => {
+    const updatedRestaurants = restaurants.map(rest => 
+      rest.code === deactivatingRestaurant.code 
+        ? { ...rest, active: false }
+        : rest
+    );
+    setRestaurants(updatedRestaurants);
+    setShowDeactivateModal(false);
+    setDeactivatingRestaurant(null);
+  };
+
+  const getActiveRestaurantsCount = () => {
+    return restaurants.filter(r => r.active).length;
   };
 
   return (
@@ -66,6 +103,7 @@ export default function AdminDashboard() {
             <div className="bg-blue-50 rounded-lg p-4">
               <h3 className="font-bold mb-2">Ukupno restorana</h3>
               <p className="text-2xl">{restaurants.length}</p>
+              <p className="text-sm text-gray-600">Aktivnih: {getActiveRestaurantsCount()}</p>
             </div>
             
             <div className="bg-green-50 rounded-lg p-4">
@@ -97,16 +135,52 @@ export default function AdminDashboard() {
             ) : (
               <div className="space-y-4">
                 {restaurants.map((restaurant) => (
-                  <div key={restaurant.code} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div key={restaurant.code} 
+                       className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
+                         !restaurant.active ? 'bg-gray-50 border-gray-200' : ''
+                       }`}>
                     <div className="flex justify-between">
                       <div>
-                        <h3 className="font-bold">{restaurant.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold">{restaurant.name}</h3>
+                          {!restaurant.active && (
+                            <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
+                              Neaktivan
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-600">Kod: {restaurant.code}</p>
                         <p className="text-sm text-gray-600">Kontakt: {restaurant.contact}</p>
                       </div>
                       <div className="space-x-2">
-                        <button className="text-blue-600 hover:text-blue-800">Uredi</button>
-                        <button className="text-red-600 hover:text-red-800">Deaktiviraj</button>
+                        <button 
+                          onClick={() => handleEditRestaurant(restaurant)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          Uredi
+                        </button>
+                        {restaurant.active ? (
+                          <button 
+                            onClick={() => handleDeactivateClick(restaurant)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            Deaktiviraj
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => {
+                              const updatedRestaurants = restaurants.map(rest => 
+                                rest.code === restaurant.code 
+                                  ? { ...rest, active: true }
+                                  : rest
+                              );
+                              setRestaurants(updatedRestaurants);
+                            }}
+                            className="text-green-600 hover:text-green-800"
+                          >
+                            Aktiviraj
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -117,9 +191,9 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Modal za dodavanje restorana */}
+      {/* Modal za dodavanje restorana - ostaje isti */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Dodaj novi restoran</h2>
             
@@ -132,7 +206,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={newRestaurant.name}
                   onChange={(e) => setNewRestaurant({...newRestaurant, name: e.target.value})}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
@@ -145,7 +219,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={newRestaurant.address}
                   onChange={(e) => setNewRestaurant({...newRestaurant, address: e.target.value})}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
@@ -158,7 +232,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={newRestaurant.contact}
                   onChange={(e) => setNewRestaurant({...newRestaurant, contact: e.target.value})}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
@@ -171,7 +245,7 @@ export default function AdminDashboard() {
                   type="tel"
                   value={newRestaurant.phone}
                   onChange={(e) => setNewRestaurant({...newRestaurant, phone: e.target.value})}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
@@ -184,7 +258,7 @@ export default function AdminDashboard() {
                   type="email"
                   value={newRestaurant.email}
                   onChange={(e) => setNewRestaurant({...newRestaurant, email: e.target.value})}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
@@ -197,7 +271,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={newRestaurant.pib}
                   onChange={(e) => setNewRestaurant({...newRestaurant, pib: e.target.value})}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
@@ -222,7 +296,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Modal za prikaz kredencijala */}
+      {/* Modal za kredencijale - ostaje isti */}
       {showCredsModal && newlyAddedRestaurant && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
@@ -295,9 +369,10 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-
-
+      {/* Modal za uređivanje restorana */}
+      {showEditModal && editingRestaurant && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font
