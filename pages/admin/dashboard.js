@@ -1,80 +1,33 @@
-import React, { useState } from 'react';
-import { Copy, Plus, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LogOut, Users, ClipboardList, AlertCircle } from 'lucide-react';
 
 export default function AdminDashboard() {
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showCredsModal, setShowCredsModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
-  const [newlyAddedRestaurant, setNewlyAddedRestaurant] = useState(null);
-  const [editingRestaurant, setEditingRestaurant] = useState(null);
-  const [deactivatingRestaurant, setDeactivatingRestaurant] = useState(null);
   const [restaurants, setRestaurants] = useState([]);
-  const [newRestaurant, setNewRestaurant] = useState({
-    name: '',
-    address: '',
-    contact: '',
-    phone: '',
-    email: '',
-    pib: ''
-  });
+  const [allOrders, setAllOrders] = useState([]);
 
-  const handleAddRestaurant = (e) => {
-    e.preventDefault();
-    const code = `REST${String(restaurants.length + 1).padStart(3, '0')}`;
-    const password = Math.random().toString(36).slice(-8);
-    
-    const restaurantWithCode = {
-      ...newRestaurant,
-      code,
-      password,
-      active: true,
-      dateAdded: new Date().toISOString()
-    };
+  useEffect(() => {
+    // Provera admin autentifikacije
+    const isAdmin = localStorage.getItem('isAdmin');
+    if (!isAdmin) {
+      window.location.href = '/admin-login';
+      return;
+    }
 
-    setRestaurants([...restaurants, restaurantWithCode]);
-    setNewlyAddedRestaurant(restaurantWithCode);
-    setShowAddModal(false);
-    setShowCredsModal(true);
-    setNewRestaurant({
-      name: '',
-      address: '',
-      contact: '',
-      phone: '',
-      email: '',
-      pib: ''
+    // Učitavanje restorana
+    const storedRestaurants = JSON.parse(localStorage.getItem('restaurants') || '[]');
+    setRestaurants(storedRestaurants);
+
+    // Učitavanje svih trebovanja
+    const allOrdersData = [];
+    storedRestaurants.forEach(restaurant => {
+      const restaurantOrders = JSON.parse(localStorage.getItem(`orders_${restaurant.code}`) || '[]');
+      allOrdersData.push(...restaurantOrders);
     });
-  };
+    setAllOrders(allOrdersData);
+  }, []);
 
-  const handleEditRestaurant = (restaurant) => {
-    setEditingRestaurant(restaurant);
-    setShowEditModal(true);
-  };
-
-  const handleUpdateRestaurant = (e) => {
-    e.preventDefault();
-    const updatedRestaurants = restaurants.map(rest => 
-      rest.code === editingRestaurant.code ? editingRestaurant : rest
-    );
-    setRestaurants(updatedRestaurants);
-    setShowEditModal(false);
-    setEditingRestaurant(null);
-  };
-
-  const handleDeactivateClick = (restaurant) => {
-    setDeactivatingRestaurant(restaurant);
-    setShowDeactivateModal(true);
-  };
-
-  const handleDeactivateConfirm = () => {
-    const updatedRestaurants = restaurants.map(rest => 
-      rest.code === deactivatingRestaurant.code 
-        ? { ...rest, active: false }
-        : rest
-    );
-    setRestaurants(updatedRestaurants);
-    setShowDeactivateModal(false);
-    setDeactivatingRestaurant(null);
+  const getNewOrdersCount = () => {
+    return allOrders.filter(order => order.status === 'novo').length;
   };
 
   const getActiveRestaurantsCount = () => {
@@ -82,484 +35,134 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
+            </div>
             <button
               onClick={() => {
                 localStorage.removeItem('isAdmin');
                 window.location.href = '/admin-login';
               }}
-              className="px-4 py-2 text-red-600 hover:text-red-800"
+              className="flex items-center gap-2 text-red-600 hover:text-red-800"
             >
+              <LogOut className="h-5 w-5" />
               Odjavi se
             </button>
-          </div>
-          
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h3 className="font-bold mb-2">Ukupno restorana</h3>
-              <p className="text-2xl">{restaurants.length}</p>
-              <p className="text-sm text-gray-600">Aktivnih: {getActiveRestaurantsCount()}</p>
-            </div>
-            
-            <div className="bg-green-50 rounded-lg p-4">
-              <h3 className="font-bold mb-2">Aktivne narudžbe</h3>
-              <p className="text-2xl">0</p>
-            </div>
-            
-            <div className="bg-purple-50 rounded-lg p-4">
-              <h3 className="font-bold mb-2">Ukupno artikala</h3>
-              <p className="text-2xl">0</p>
-            </div>
-          </div>
-
-          {/* Restaurant List */}
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Restorani</h2>
-              <button 
-                onClick={() => setShowAddModal(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                + Dodaj novi restoran
-              </button>
-            </div>
-            
-            {restaurants.length === 0 ? (
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                Još uvek nema dodatih restorana
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {restaurants.map((restaurant) => (
-                  <div key={restaurant.code} 
-                       className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
-                         !restaurant.active ? 'bg-gray-50 border-gray-200' : ''
-                       }`}>
-                    <div className="flex justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold">{restaurant.name}</h3>
-                          {!restaurant.active && (
-                            <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
-                              Neaktivan
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600">Kod: {restaurant.code}</p>
-                        <p className="text-sm text-gray-600">Kontakt: {restaurant.contact}</p>
-                      </div>
-                      <div className="space-x-2">
-                        <button 
-                          onClick={() => handleEditRestaurant(restaurant)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          Uredi
-                        </button>
-                        {restaurant.active ? (
-                          <button 
-                            onClick={() => handleDeactivateClick(restaurant)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            Deaktiviraj
-                          </button>
-                        ) : (
-                          <button 
-                            onClick={() => {
-                              const updatedRestaurants = restaurants.map(rest => 
-                                rest.code === restaurant.code 
-                                  ? { ...rest, active: true }
-                                  : rest
-                              );
-                              setRestaurants(updatedRestaurants);
-                            }}
-                            className="text-green-600 hover:text-green-800"
-                          >
-                            Aktiviraj
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Add Restaurant Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Dodaj novi restoran</h2>
-              <button 
-                onClick={() => setShowAddModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="h-6 w-6" />
-              </button>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center gap-3">
+              <Users className="h-8 w-8 text-blue-600" />
+              <div>
+                <p className="text-sm text-gray-500">Restorani</p>
+                <p className="text-2xl font-bold">{getActiveRestaurantsCount()}</p>
+                <p className="text-xs text-gray-500">Aktivnih: {getActiveRestaurantsCount()} / Ukupno: {restaurants.length}</p>
+              </div>
             </div>
-            
-            <form onSubmit={handleAddRestaurant} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Naziv restorana
-                </label>
-                <input
-                  type="text"
-                  value={newRestaurant.name}
-                  onChange={(e) => setNewRestaurant({...newRestaurant, name: e.target.value})}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Adresa
-                </label>
-                <input
-                  type="text"
-                  value={newRestaurant.address}
-                  onChange={(e) => setNewRestaurant({...newRestaurant, address: e.target.value})}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Kontakt osoba
-                </label>
-                <input
-                  type="text"
-                  value={newRestaurant.contact}
-                  onChange={(e) => setNewRestaurant({...newRestaurant, contact: e.target.value})}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Telefon
-                </label>
-                <input
-                  type="tel"
-                  value={newRestaurant.phone}
-                  onChange={(e) => setNewRestaurant({...newRestaurant, phone: e.target.value})}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={newRestaurant.email}
-                  onChange={(e) => setNewRestaurant({...newRestaurant, email: e.target.value})}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PIB
-                </label>
-                <input
-                  type="text"
-                  value={newRestaurant.pib}
-                  onChange={(e) => setNewRestaurant({...newRestaurant, pib: e.target.value})}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                >
-                  Otkaži
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Dodaj restoran
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
 
-      {/* Credentials Modal */}
-      {showCredsModal && newlyAddedRestaurant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Kredencijali za restoran</h2>
-            
-            <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center gap-3">
+              <ClipboardList className="h-8 w-8 text-green-600" />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Kod restorana
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newlyAddedRestaurant.code}
-                    readOnly
-                    className="w-full p-2 border rounded-lg bg-white"
-                  />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(newlyAddedRestaurant.code);
-                      alert('Kod restorana je kopiran!');
-                    }}
-                    className="p-2 text-blue-600 hover:text-blue-800"
-                  >
-                    <Copy className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Lozinka
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newlyAddedRestaurant.password}
-                    readOnly
-                    className="w-full p-2 border rounded-lg bg-white"
-                  />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(newlyAddedRestaurant.password);
-                      alert('Lozinka je kopirana!');
-                    }}
-                    className="p-2 text-blue-600 hover:text-blue-800"
-                  >
-                    <Copy className="h-5 w-5" />
-                  </button>
-                </div>
+                <p className="text-sm text-gray-500">Ukupno trebovanja</p>
+                <p className="text-2xl font-bold">{allOrders.length}</p>
+                <p className="text-xs text-gray-500">
+                  Danas: {allOrders.filter(order => 
+                    new Date(order.createdAt).toDateString() === new Date().toDateString()
+                  ).length}
+                </p>
               </div>
             </div>
+          </div>
 
-            <div className="mt-6 text-sm text-gray-600">
-              <p>Sačuvajte ove kredencijale jer će biti potrebni za prijavu na sistem.</p>
-              <p className="mt-2">Preporučujemo da ih prosledite restoranu bezbednim putem.</p>
-            </div>
-
-            <div className="flex justify-end mt-6">
-              <button
-                onClick={() => {
-                  setShowCredsModal(false);
-                  setNewlyAddedRestaurant(null);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                U redu
-              </button>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-8 w-8 text-orange-600" />
+              <div>
+                <p className="text-sm text-gray-500">Nova trebovanja</p>
+                <p className="text-2xl font-bold">{getNewOrdersCount()}</p>
+                <p className="text-xs text-gray-500">Čekaju na odobrenje</p>
+              </div>
             </div>
           </div>
         </div>
-      )}
 
- {/* Edit Modal */}
-      {showEditModal && editingRestaurant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Uredi restoran</h2>
-              <button 
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditingRestaurant(null);
-                }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleUpdateRestaurant} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Kod restorana
-                </label>
-                <input
-                  type="text"
-                  value={editingRestaurant.code}
-                  className="w-full p-2 border rounded-lg bg-gray-100"
-                  disabled
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Naziv restorana
-                </label>
-                <input
-                  type="text"
-                  value={editingRestaurant.name}
-                  onChange={(e) => setEditingRestaurant({
-                    ...editingRestaurant,
-                    name: e.target.value
-                  })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Adresa
-                </label>
-                <input
-                  type="text"
-                  value={editingRestaurant.address}
-                  onChange={(e) => setEditingRestaurant({
-                    ...editingRestaurant,
-                    address: e.target.value
-                  })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Kontakt osoba
-                </label>
-                <input
-                  type="text"
-                  value={editingRestaurant.contact}
-                  onChange={(e) => setEditingRestaurant({
-                    ...editingRestaurant,
-                    contact: e.target.value
-                  })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Telefon
-                </label>
-                <input
-                  type="tel"
-                  value={editingRestaurant.phone}
-                  onChange={(e) => setEditingRestaurant({
-                    ...editingRestaurant,
-                    phone: e.target.value
-                  })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={editingRestaurant.email}
-                  onChange={(e) => setEditingRestaurant({
-                    ...editingRestaurant,
-                    email: e.target.value
-                  })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PIB
-                </label>
-                <input
-                  type="text"
-                  value={editingRestaurant.pib}
-                  onChange={(e) => setEditingRestaurant({
-                    ...editingRestaurant,
-                    pib: e.target.value
-                  })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditingRestaurant(null);
-                  }}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                >
-                  Otkaži
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Sačuvaj izmene
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Deactivate Confirmation Modal */}
-      {showDeactivateModal && deactivatingRestaurant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Potvrda deaktivacije</h2>
-            
-            <p className="text-gray-600">
-              Da li ste sigurni da želite da deaktivirate restoran{' '}
-              <span className="font-medium">{deactivatingRestaurant.name}</span>?
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div 
+            onClick={() => window.location.href = '/admin/orders'}
+            className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-md transition-shadow"
+          >
+            <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 text-blue-600" />
+              Upravljanje trebovanjima
+            </h3>
+            <p className="text-sm text-gray-600">
+              Pregledajte i upravljajte svim trebovanjima. {getNewOrdersCount()} {getNewOrdersCount() === 1 ? 'novo trebovanje čeka' : 'novih trebovanja čeka'} na odobrenje.
             </p>
-            
-            <div className="flex justify-end space-x-2 mt-6">
-              <button
-                onClick={() => {
-                  setShowDeactivateModal(false);
-                  setDeactivatingRestaurant(null);
-                }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Otkaži
-              </button>
-              <button
-                onClick={handleDeactivateConfirm}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Deaktiviraj
-              </button>
+          </div>
+
+          <div 
+            onClick={() => window.location.href = '/admin/restaurants'}
+            className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-md transition-shadow"
+          >
+            <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+              <Users className="h-5 w-5 text-blue-600" />
+              Upravljanje restoranima
+            </h3>
+            <p className="text-sm text-gray-600">
+              Dodajte nove restorane ili upravljajte postojećim. Trenutno imate {restaurants.length} {restaurants.length === 1 ? 'registrovan restoran' : 'registrovanih restorana'}.
+            </p>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="px-6 py-4 border-b">
+            <h2 className="text-lg font-medium">Nedavna aktivnost</h2>
+          </div>
+          <div className="p-6">
+            <div className="space-y-4">
+              {allOrders
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .slice(0, 5)
+                .map(order => {
+                  const restaurant = restaurants.find(r => r.code === order.restaurantCode);
+                  return (
+                    <div key={order.id} className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{restaurant?.name || 'Nepoznat restoran'}</p>
+                        <p className="text-sm text-gray-500">
+                          Trebovanje #{order.id} - {order.status}
+                        </p>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString('sr-RS', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
