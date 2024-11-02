@@ -1,4 +1,11 @@
- const handleSubmit = (e) => {
+ import { useState } from 'react';
+
+function RestaurantLogin() {
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     
     // Ovde ćemo kasnije dodati proveru sa bazom podataka
@@ -78,6 +85,5 @@
     </div>
   );
 }
-Last edited 1 minute ago
 
-
+export default RestaurantLogin;
