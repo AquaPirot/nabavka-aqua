@@ -19,9 +19,8 @@ export default function AdminDashboard() {
     pib: ''
   });
 
-    const handleAddRestaurant = (e) => {
+  const handleAddRestaurant = (e) => {
     e.preventDefault();
-    
     const code = `REST${String(restaurants.length + 1).padStart(3, '0')}`;
     const password = Math.random().toString(36).slice(-8);
     
@@ -82,10 +81,11 @@ export default function AdminDashboard() {
     return restaurants.filter(r => r.active).length;
   };
 
-    return (
+  return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6">
+          {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
             <button
@@ -99,6 +99,7 @@ export default function AdminDashboard() {
             </button>
           </div>
           
+          {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-blue-50 rounded-lg p-4">
               <h3 className="font-bold mb-2">Ukupno restorana</h3>
@@ -117,6 +118,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+          {/* Restaurant List */}
           <div className="mt-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Restorani</h2>
@@ -191,11 +193,19 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Modal za dodavanje restorana */}
+      {/* Add Restaurant Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Dodaj novi restoran</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Dodaj novi restoran</h2>
+              <button 
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
             
             <form onSubmit={handleAddRestaurant} className="space-y-4">
               <div>
@@ -296,7 +306,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Modal za kredencijale */}
+      {/* Credentials Modal */}
       {showCredsModal && newlyAddedRestaurant && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
@@ -370,19 +380,186 @@ export default function AdminDashboard() {
         </div>
       )}
 
-     {/* Modal za uređivanje restorana */}
-{showEditModal && editingRestaurant && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div className="bg-white rounded-xl p-6 w-full max-w-md">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Uredi restoran</h2>
-        <button 
-          onClick={() => {
-            setShowEditModal(false);
-            setEditingRestaurant(null);
-          }}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <X className="h-6 w-6" />
-        </button>
-      </div>
+ {/* Edit Modal */}
+      {showEditModal && editingRestaurant && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Uredi restoran</h2>
+              <button 
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingRestaurant(null);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleUpdateRestaurant} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Kod restorana
+                </label>
+                <input
+                  type="text"
+                  value={editingRestaurant.code}
+                  className="w-full p-2 border rounded-lg bg-gray-100"
+                  disabled
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Naziv restorana
+                </label>
+                <input
+                  type="text"
+                  value={editingRestaurant.name}
+                  onChange={(e) => setEditingRestaurant({
+                    ...editingRestaurant,
+                    name: e.target.value
+                  })}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Adresa
+                </label>
+                <input
+                  type="text"
+                  value={editingRestaurant.address}
+                  onChange={(e) => setEditingRestaurant({
+                    ...editingRestaurant,
+                    address: e.target.value
+                  })}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Kontakt osoba
+                </label>
+                <input
+                  type="text"
+                  value={editingRestaurant.contact}
+                  onChange={(e) => setEditingRestaurant({
+                    ...editingRestaurant,
+                    contact: e.target.value
+                  })}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Telefon
+                </label>
+                <input
+                  type="tel"
+                  value={editingRestaurant.phone}
+                  onChange={(e) => setEditingRestaurant({
+                    ...editingRestaurant,
+                    phone: e.target.value
+                  })}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={editingRestaurant.email}
+                  onChange={(e) => setEditingRestaurant({
+                    ...editingRestaurant,
+                    email: e.target.value
+                  })}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  PIB
+                </label>
+                <input
+                  type="text"
+                  value={editingRestaurant.pib}
+                  onChange={(e) => setEditingRestaurant({
+                    ...editingRestaurant,
+                    pib: e.target.value
+                  })}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingRestaurant(null);
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Otkaži
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Sačuvaj izmene
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Deactivate Confirmation Modal */}
+      {showDeactivateModal && deactivatingRestaurant && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Potvrda deaktivacije</h2>
+            
+            <p className="text-gray-600">
+              Da li ste sigurni da želite da deaktivirate restoran{' '}
+              <span className="font-medium">{deactivatingRestaurant.name}</span>?
+            </p>
+            
+            <div className="flex justify-end space-x-2 mt-6">
+              <button
+                onClick={() => {
+                  setShowDeactivateModal(false);
+                  setDeactivatingRestaurant(null);
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Otkaži
+              </button>
+              <button
+                onClick={handleDeactivateConfirm}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Deaktiviraj
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
