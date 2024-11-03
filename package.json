@@ -12,6 +12,7 @@
     "react": "latest",
     "react-dom": "latest",
     "lucide-react": "0.263.1"
+    "mysql2": "^3.6.8"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.16",
