@@ -1,4 +1,3 @@
-// pages/api/admin/restaurants.js
 import { query } from '../../../config/db';
 
 export default async function handler(req, res) {
@@ -7,7 +6,7 @@ export default async function handler(req, res) {
   switch (req.method) {
     case 'GET':
       try {
-        const restaurants = await query('SELECT * FROM restaurants');
+        const restaurants = await query('SELECT * FROM restaurants WHERE active = true');
         return res.status(200).json(restaurants);
       } catch (error) {
         console.error('Error fetching restaurants:', error);
@@ -16,17 +15,22 @@ export default async function handler(req, res) {
       
     case 'POST':
       try {
-        const { code, name, address, contact, email, phone, password } = req.body;
+        const { name, code, email, password, address, phone } = req.body;
+        
+        if (!name || !code || !email || !password) {
+          return res.status(400).json({ 
+            error: 'Missing required fields' 
+          });
+        }
         
         const result = await query(
-          `INSERT INTO restaurants (code, name, address, contact, email, phone, password) 
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [code, name, address, contact, email, phone, password]
+          'INSERT INTO restaurants (name, code, email, password, address, phone) VALUES (?, ?, ?, ?, ?, ?)',
+          [name, code, email, password, address, phone]
         );
         
-        return res.status(201).json({
-          success: true,
-          id: result.insertId
+        return res.status(201).json({ 
+          message: 'Restaurant created successfully',
+          id: result.insertId 
         });
       } catch (error) {
         console.error('Error creating restaurant:', error);
@@ -34,46 +38,6 @@ export default async function handler(req, res) {
       }
       
     default:
-      res.status(405).json({ error: 'Method not allowed' });
-  }
-}
-
-// pages/api/admin/orders.js
-import { query } from '../../../config/db';
-
-export default async function handler(req, res) {
-  switch (req.method) {
-    case 'GET':
-      try {
-        const orders = await query(`
-          SELECT o.*, r.name as restaurant_name 
-          FROM orders o 
-          JOIN restaurants r ON o.restaurant_code = r.code
-          ORDER BY o.created_at DESC
-        `);
-        
-        return res.status(200).json(orders);
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-      
-    case 'PUT':
-      try {
-        const { orderId, status } = req.body;
-        
-        await query(
-          'UPDATE orders SET status = ? WHERE id = ?',
-          [status, orderId]
-        );
-        
-        return res.status(200).json({ success: true });
-      } catch (error) {
-        console.error('Error updating order:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-      
-    default:
-      res.status(405).json({ error: 'Method not allowed' });
+      return res.status(405).json({ error: 'Method not allowed' });
   }
 }
