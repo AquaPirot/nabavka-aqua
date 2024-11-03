@@ -1,5 +1,7 @@
 // pages/api/auth/login.js
 import { query } from '../../../config/db';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,39 +9,53 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { code, password, isAdmin } = req.body;
+    const { email, password, type } = req.body;
 
-    if (isAdmin) {
-      // Admin login logika
-      if (code === 'admin' && password === process.env.ADMIN_PASSWORD) {
-        return res.status(200).json({
-          success: true,
-          type: 'admin',
-          token: 'admin-token' // Kasnije ćemo implementirati pravi JWT
-        });
-      }
-    } else {
-      // Restaurant login logika
-      const [restaurant] = await query(
-        'SELECT * FROM restaurants WHERE code = ? AND password = ? AND active = 1',
-        [code, password]
-      );
-
-      if (restaurant) {
-        return res.status(200).json({
-          success: true,
-          type: 'restaurant',
-          restaurant: {
-            code: restaurant.code,
-            name: restaurant.name
-          }
-        });
-      }
+    if (!email || !password || !type) {
+      return res.status(400).json({ error: 'Sva polja su obavezna' });
     }
 
-    return res.status(401).json({ error: 'Invalid credentials' });
+    let user;
+    if (type === 'restaurant') {
+      const [rows] = await query(
+        'SELECT * FROM restaurants WHERE email = ? AND active = true',
+        [email]
+      );
+      user = rows[0];
+    } else if (type === 'admin') {
+      const [rows] = await query(
+        'SELECT * FROM admins WHERE email = ?',
+        [email]
+      );
+      user = rows[0];
+    }
+
+    if (!user || !await bcrypt.compare(password, user.password)) {
+      return res.status(401).json({ error: 'Pogrešni pristupni podaci' });
+    }
+
+    const token = jwt.sign(
+      { 
+        id: user.id,
+        type,
+        code: type === 'restaurant' ? user.code : null
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({ 
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        code: type === 'restaurant' ? user.code : null
+      }
+    });
+
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Došlo je do greške prilikom prijave' });
   }
 }
