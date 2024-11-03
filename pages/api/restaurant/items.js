@@ -1,6 +1,6 @@
 // pages/api/admin/restaurants.js
-import { authMiddleware } from '../../middleware/auth';
-import { prisma } from '../../lib/prisma';
+import { authMiddleware } from '../../../../middleware/auth';
+import { prisma } from '../../../../lib/prisma';
 
 export default async function handler(req, res) {
   // Provera admin privilegija
