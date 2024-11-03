@@ -1,5 +1,4 @@
-// config/db.js
-const mysql = require('mysql2/promise');
+import mysql from 'mysql2/promise';
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -11,4 +10,14 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-export default pool;
+export async function query(sql, params) {
+  try {
+    const [results] = await pool.execute(sql, params);
+    return results;
+  } catch (error) {
+    console.error('Database query error:', error);
+    throw error;
+  }
+}
+
+export { pool };
