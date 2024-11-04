@@ -1,7 +1,7 @@
 // pages/api/auth/login.js
-import { query } from '../../../config/db';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import prisma from '../../../lib/prisma'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -17,18 +17,14 @@ export default async function handler(req, res) {
 
     let user;
     if (type === 'restaurant') {
-      const [rows] = await query(
-        'SELECT * FROM restaurants WHERE email = ? AND active = true',
-        [email]
-      );
-      user = rows[0];
-    } else if (type === 'admin') {
-      const [rows] = await query(
-        'SELECT * FROM admins WHERE email = ?',
-        [email]
-      );
-      user = rows[0];
+      user = await prisma.restaurant.findUnique({
+        where: { 
+          email,
+          active: true 
+        }
+      });
     }
+    // Admin login logiku ćemo dodati kasnije
 
     if (!user || !await bcrypt.compare(password, user.password)) {
       return res.status(401).json({ error: 'Pogrešni pristupni podaci' });
@@ -50,7 +46,7 @@ export default async function handler(req, res) {
         id: user.id,
         email: user.email,
         name: user.name,
-        code: type === 'restaurant' ? user.code : null
+        code: user.code
       }
     });
 
