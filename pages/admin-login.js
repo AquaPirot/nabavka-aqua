@@ -11,19 +11,43 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+    
     try {
-     const res = await fetch('https://nabavka-aqua.vercel.app/api/auth/admin-login', {
+      console.log('Pokušaj prijave:', formData); // Debugging
+      
+      const res = await fetch('/api/auth/admin-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
+
+      console.log('Status odgovora:', res.status); // Debugging
+      
+      const data = await res.json();
+      console.log('Primljeni podaci:', data); // Debugging
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Greška pri prijavi');
+      }
+
+      localStorage.setItem('adminToken', data.token);
+      localStorage.setItem('adminUser', JSON.stringify(data.user));
+      
+      console.log('Login uspešan, redirekcija...'); // Debugging
+      router.push('/admin/dashboard');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
       const data = await res.json();
 
