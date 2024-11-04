@@ -1,5 +1,5 @@
 // pages/api/middleware/auth.js
-import { prisma } from '../../../lib/prisma'
+import prisma from '../../../lib/prisma'
 import jwt from 'jsonwebtoken'
 
 export async function verifyToken(req) {
