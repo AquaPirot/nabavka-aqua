@@ -1,72 +1,51 @@
-// pages/api/admin/restaurants.js
-import { adminMiddleware } from '@/middleware/auth';
-import { prisma } from '@/lib/prisma';
+// pages/api/restaurant/items.js
+import prisma from '../../../lib/prisma'
+import { verifyToken } from '../../../middleware/auth'
 
 export default async function handler(req, res) {
-  // Provera admin privilegija
-  const authResponse = await adminMiddleware(req);
-  if (authResponse.status === 403) {
-    return authResponse;
-  }
+  try {
+    const user = await verifyToken(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
-  // GET - Lista svih restorana
-  if (req.method === 'GET') {
-    try {
-      const restaurants = await prisma.restaurant.findMany({
-        include: {
-          user: true,
-          menuItems: true
+    switch (req.method) {
+      case 'GET':
+        const items = await prisma.item.findMany({
+          where: {
+            active: true
+          },
+          orderBy: {
+            name: 'asc'
+          }
+        });
+        return res.json(items);
+
+      case 'POST':
+        if (user.type !== 'admin') {
+          return res.status(403).json({ error: 'Samo admin može dodavati artikle' });
         }
-      });
-      return res.status(200).json(restaurants);
-    } catch (error) {
-      return res.status(500).json({ error: 'Error fetching restaurants' });
-    }
-  }
-
-  // POST - Kreiranje novog restorana
-  if (req.method === 'POST') {
-    try {
-      const { name, address, userId } = req.body;
-      const newRestaurant = await prisma.restaurant.create({
-        data: {
-          name,
-          address,
-          userId
+        
+        const { name, code } = req.body;
+        if (!name || !code) {
+          return res.status(400).json({ error: 'Naziv i šifra su obavezni' });
         }
-      });
-      return res.status(201).json(newRestaurant);
-    } catch (error) {
-      return res.status(500).json({ error: 'Error creating restaurant' });
-    }
-  }
 
-  // PUT - Ažuriranje restorana
-  if (req.method === 'PUT') {
-    try {
-      const { id, ...updateData } = req.body;
-      const updatedRestaurant = await prisma.restaurant.update({
-        where: { id },
-        data: updateData
-      });
-      return res.status(200).json(updatedRestaurant);
-    } catch (error) {
-      return res.status(500).json({ error: 'Error updating restaurant' });
-    }
-  }
+        const newItem = await prisma.item.create({
+          data: {
+            name,
+            code
+          }
+        });
+        
+        return res.status(201).json(newItem);
 
-  // DELETE - Brisanje restorana
-  if (req.method === 'DELETE') {
-    try {
-      const { id } = req.query;
-      await prisma.restaurant.delete({
-        where: { id }
-      });
-      return res.status(204).end();
-    } catch (error) {
-      return res.status(500).json({ error: 'Error deleting restaurant' });
+      default:
+        res.setHeader('Allow', ['GET', 'POST']);
+        return res.status(405).json({ error: `Method ${req.method} nije dozvoljen` });
     }
+  } catch (error) {
+    console.error('Items API error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
-
-  return res.status(405).json({ error: 'Method not allowed' });
 }
