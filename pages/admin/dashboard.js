@@ -1,168 +1,161 @@
-import React, { useState, useEffect } from 'react';
-import { LogOut, Users, ClipboardList, AlertCircle } from 'lucide-react';
+// pages/admin/dashboard.js
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { BarChart, Package, Users } from 'lucide-react'
 
 export default function AdminDashboard() {
-  const [restaurants, setRestaurants] = useState([]);
-  const [allOrders, setAllOrders] = useState([]);
+  const router = useRouter()
+  const [stats, setStats] = useState({
+    restaurants: 0,
+    activeOrders: 0,
+    totalOrders: 0
+  })
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Provera admin autentifikacije
-    const isAdmin = localStorage.getItem('isAdmin');
-    if (!isAdmin) {
-      window.location.href = '/admin-login';
-      return;
+    const token = localStorage.getItem('adminToken')
+    if (!token) {
+      router.push('/admin-login')
+      return
     }
 
-    // Učitavanje restorana
-    const storedRestaurants = JSON.parse(localStorage.getItem('restaurants') || '[]');
-    setRestaurants(storedRestaurants);
+    fetchDashboardData(token)
+  }, [])
 
-    // Učitavanje svih trebovanja
-    const allOrdersData = [];
-    storedRestaurants.forEach(restaurant => {
-      const restaurantOrders = JSON.parse(localStorage.getItem(`orders_${restaurant.code}`) || '[]');
-      allOrdersData.push(...restaurantOrders);
-    });
-    setAllOrders(allOrdersData);
-  }, []);
+  const fetchDashboardData = async (token) => {
+    try {
+      const [restaurantsRes, ordersRes] = await Promise.all([
+        fetch('/api/admin/restaurants', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }),
+        fetch('/api/admin/orders', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      ])
 
-  const getNewOrdersCount = () => {
-    return allOrders.filter(order => order.status === 'novo').length;
-  };
+      const [restaurants, orders] = await Promise.all([
+        restaurantsRes.json(),
+        ordersRes.json()
+      ])
 
-  const getActiveRestaurantsCount = () => {
-    return restaurants.filter(r => r.active).length;
-  };
+      setStats({
+        restaurants: restaurants.length,
+        activeOrders: orders.filter(o => o.status === 'novo').length,
+        totalOrders: orders.length
+      })
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
-            </div>
-            <button
-              onClick={() => {
-                localStorage.removeItem('isAdmin');
-                window.location.href = '/admin-login';
-              }}
-              className="flex items-center gap-2 text-red-600 hover:text-red-800"
-            >
-              <LogOut className="h-5 w-5" />
-              Odjavi se
-            </button>
+  const StatCard = ({ title, value, icon: Icon }) => (
+    <div className="bg-white overflow-hidden shadow rounded-lg">
+      <div className="p-5">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <Icon className="h-6 w-6 text-gray-400" />
           </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center gap-3">
-              <Users className="h-8 w-8 text-blue-600" />
-              <div>
-                <p className="text-sm text-gray-500">Restorani</p>
-                <p className="text-2xl font-bold">{getActiveRestaurantsCount()}</p>
-                <p className="text-xs text-gray-500">Aktivnih: {getActiveRestaurantsCount()} / Ukupno: {restaurants.length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center gap-3">
-              <ClipboardList className="h-8 w-8 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-500">Ukupno trebovanja</p>
-                <p className="text-2xl font-bold">{allOrders.length}</p>
-                <p className="text-xs text-gray-500">
-                  Danas: {allOrders.filter(order => 
-                    new Date(order.createdAt).toDateString() === new Date().toDateString()
-                  ).length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-8 w-8 text-orange-600" />
-              <div>
-                <p className="text-sm text-gray-500">Nova trebovanja</p>
-                <p className="text-2xl font-bold">{getNewOrdersCount()}</p>
-                <p className="text-xs text-gray-500">Čekaju na odobrenje</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div 
-            onClick={() => window.location.href = '/admin/orders'}
-            className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-md transition-shadow"
-          >
-            <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-              <ClipboardList className="h-5 w-5 text-blue-600" />
-              Upravljanje trebovanjima
-            </h3>
-            <p className="text-sm text-gray-600">
-              Pregledajte i upravljajte svim trebovanjima. {getNewOrdersCount()} {getNewOrdersCount() === 1 ? 'novo trebovanje čeka' : 'novih trebovanja čeka'} na odobrenje.
-            </p>
-          </div>
-
-          <div 
-            onClick={() => window.location.href = '/admin/restaurants'}
-            className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-md transition-shadow"
-          >
-            <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-600" />
-              Upravljanje restoranima
-            </h3>
-            <p className="text-sm text-gray-600">
-              Dodajte nove restorane ili upravljajte postojećim. Trenutno imate {restaurants.length} {restaurants.length === 1 ? 'registrovan restoran' : 'registrovanih restorana'}.
-            </p>
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b">
-            <h2 className="text-lg font-medium">Nedavna aktivnost</h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {allOrders
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                .slice(0, 5)
-                .map(order => {
-                  const restaurant = restaurants.find(r => r.code === order.restaurantCode);
-                  return (
-                    <div key={order.id} className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{restaurant?.name || 'Nepoznat restoran'}</p>
-                        <p className="text-sm text-gray-500">
-                          Trebovanje #{order.id} - {order.status}
-                        </p>
-                      </div>
-                      <p className="text-sm text-gray-500">
-                        {new Date(order.createdAt).toLocaleDateString('sr-RS', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                  );
-                })}
-            </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">
+                {title}
+              </dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">
+                  {value}
+                </div>
+              </dd>
+            </dl>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Učitavanje...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <div className="py-6">
+        <header>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold leading-tight text-gray-900">
+              Admin Dashboard
+            </h1>
+          </div>
+        </header>
+        <main>
+          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="px-4 py-8 sm:px-0">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <StatCard 
+                  title="Ukupno restorana" 
+                  value={stats.restaurants}
+                  icon={Users}
+                />
+                <StatCard 
+                  title="Nova trebovanja" 
+                  value={stats.activeOrders}
+                  icon={Package}
+                />
+                <StatCard 
+                  title="Ukupno trebovanja" 
+                  value={stats.totalOrders}
+                  icon={BarChart}
+                />
+              </div>
+
+              <div className="mt-8">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="p-5">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          Upravljanje restoranima
+                        </h3>
+                        <button
+                          onClick={() => router.push('/admin/restaurants')}
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                        >
+                          Pregledaj
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="p-5">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          Upravljanje trebovanjima
+                        </h3>
+                        <button
+                          onClick={() => router.push('/admin/orders')}
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                        >
+                          Pregledaj
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  )
 }
