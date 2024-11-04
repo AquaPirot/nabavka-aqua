@@ -2,15 +2,13 @@
 import Cors from 'cors'
 
 const cors = Cors({
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true,
-  origin: [
-    'https://nabavka-aqua.vercel.app',
-    'http://localhost:3000'
-  ]
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  origin: '*', // Za razvoj, kasnije specificirati tačne domene
+  optionsSuccessStatus: 200
 })
 
-export function runMiddleware(req, res, fn) {
+// Helper metoda za izvršavanje middleware-a
+function runMiddleware(req, res, fn) {
   return new Promise((resolve, reject) => {
     fn(req, res, (result) => {
       if (result instanceof Error) {
@@ -21,7 +19,7 @@ export function runMiddleware(req, res, fn) {
   })
 }
 
-export default async function handler(req, res, next) {
+export default async function handler(req, res) {
   await runMiddleware(req, res, cors)
-  return next(req, res)
+  res.status(200).json({ message: 'CORS enabled' })
 }
