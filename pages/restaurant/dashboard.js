@@ -1,174 +1,183 @@
-import { useState, useEffect } from 'react';
-import { LogOut, Plus, Clock, CheckCircle, XCircle } from 'lucide-react';
+// pages/restaurant/dashboard.js
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { Plus, Package, Clock, CheckCircle, XCircle } from 'lucide-react'
 
 export default function RestaurantDashboard() {
-  const [restaurantName, setRestaurantName] = useState('');
-  const [restaurantCode, setRestaurantCode] = useState('');
-  const [orders, setOrders] = useState([]);
+  const router = useRouter()
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    const code = localStorage.getItem('restaurantCode');
-    const name = localStorage.getItem('restaurantName');
-    
-    if (!code || !name) {
-      window.location.href = '/restaurant-login';
-      return;
+    const token = localStorage.getItem('token')
+    if (!token) {
+      router.push('/restaurant-login')
+      return
     }
+    fetchOrders()
+  }, [])
 
-    setRestaurantCode(code);
-    setRestaurantName(name);
-
-    // Učitavanje trebovanja
-    const storedOrders = localStorage.getItem(`orders_${code}`);
-    if (storedOrders) {
-      setOrders(JSON.parse(storedOrders));
+  const fetchOrders = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch('/api/restaurant/orders', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setOrders(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-  }, []);
+  }
 
-  const getStatusBadge = (status) => {
-    switch(status) {
-      case 'novo':
-        return (
-          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1">
-            <Clock className="w-4 h-4" />
-            Novo
-          </span>
-        );
-      case 'odobreno':
-        return (
-          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm flex items-center gap-1">
-            <CheckCircle className="w-4 h-4" />
-            Odobreno
-          </span>
-        );
-      case 'odbijeno':
-        return (
-          <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm flex items-center gap-1">
-            <XCircle className="w-4 h-4" />
-            Odbijeno
-          </span>
-        );
-      default:
-        return status;
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'novo': return <Clock className="h-5 w-5 text-yellow-500" />
+      case 'odobreno': return <CheckCircle className="h-5 w-5 text-green-500" />
+      case 'odbijeno': return <XCircle className="h-5 w-5 text-red-500" />
+      default: return null
     }
-  };
+  }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('sr-RS', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Učitavanje...</div>
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-xl font-bold text-gray-800">{restaurantName}</h1>
-              <p className="text-sm text-gray-600">Dashboard</p>
-            </div>
-            <button
-              onClick={() => {
-                localStorage.removeItem('restaurantCode');
-                localStorage.removeItem('restaurantName');
-                window.location.href = '/restaurant-login';
-              }}
-              className="flex items-center gap-2 text-red-600 hover:text-red-800"
-            >
-              <LogOut className="h-5 w-5" />
-              Odjavi se
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-500">Ukupno trebovanja</h3>
-            <p className="mt-2 text-3xl font-bold text-gray-900">{orders.length}</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-500">Nova trebovanja</h3>
-            <p className="mt-2 text-3xl font-bold text-gray-900">
-              {orders.filter(order => order.status === 'novo').length}
-            </p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-500">Odobrena trebovanja</h3>
-            <p className="mt-2 text-3xl font-bold text-gray-900">
-              {orders.filter(order => order.status === 'odobreno').length}
-            </p>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mb-8">
+    <div className="min-h-screen bg-gray-100 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-gray-900">Trebovanja</h1>
           <button
-            onClick={() => window.location.href = '/restaurant/orders'}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            onClick={() => router.push('/restaurant/orders/new')}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-4 w-4 mr-2" />
             Novo trebovanje
           </button>
         </div>
 
-        {/* Orders List */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b">
-            <h2 className="text-lg font-medium text-gray-900">Trebovanja</h2>
+        <div className="mt-8">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <Package className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        Ukupno trebovanja
+                      </dt>
+                      <dd className="flex items-baseline">
+                        <div className="text-2xl font-semibold text-gray-900">
+                          {orders.length}
+                        </div>
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <Clock className="h-6 w-6 text-yellow-400" />
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        Na čekanju
+                      </dt>
+                      <dd className="flex items-baseline">
+                        <div className="text-2xl font-semibold text-gray-900">
+                          {orders.filter(o => o.status === 'novo').length}
+                        </div>
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <CheckCircle className="h-6 w-6 text-green-400" />
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        Odobreno
+                      </dt>
+                      <dd className="flex items-baseline">
+                        <div className="text-2xl font-semibold text-gray-900">
+                          {orders.filter(o => o.status === 'odobreno').length}
+                        </div>
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {orders.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              Još uvek nema trebovanja
-            </div>
-          ) : (
-            <div className="divide-y">
-              {orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((order) => (
-                <div key={order.id} className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-medium text-gray-900">#{order.id}</h3>
-                        {getStatusBadge(order.status)}
+          <div className="mt-8 bg-white shadow overflow-hidden sm:rounded-md">
+            <ul className="divide-y divide-gray-200">
+              {orders.map((order) => (
+                <li key={order.id}>
+                  <div className="px-4 py-4 sm:px-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        {getStatusIcon(order.status)}
+                        <p className="ml-2 text-sm font-medium text-gray-600">
+                          {order.orderNumber}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Kreirano: {formatDate(order.createdAt)}
-                      </p>
+                      <div className="ml-2 flex-shrink-0 flex">
+                        <button
+                          onClick={() => router.push(`/restaurant/orders/${order.id}`)}
+                          className="px-3 py-1 text-sm text-blue-600 hover:text-blue-900"
+                        >
+                          Detalji
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-2 sm:flex sm:justify-between">
+                      <div className="sm:flex">
+                        <p className="flex items-center text-sm text-gray-500">
+                          Stavki: {order.items.length}
+                        </p>
+                      </div>
+                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                        <p>
+                          {new Date(order.createdAt).toLocaleDateString('sr-RS')}
+                        </p>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="mt-4 space-y-2">
-                    {order.items.map((item, index) => (
-                      <div key={index} className="text-sm text-gray-600">
-                        {item.quantity} {item.unit} - {item.name}
-                      </div>
-                    ))}
-                  </div>
-
-                  {order.notes && (
-                    <div className="mt-4 text-sm text-gray-500">
-                      <p className="font-medium">Napomene:</p>
-                      <p>{order.notes}</p>
-                    </div>
-                  )}
-                </div>
+                </li>
               ))}
-            </div>
-          )}
+            </ul>
+          </div>
         </div>
+
+        {error && (
+          <div className="mt-4 text-red-600 text-center">
+            {error}
+          </div>
+        )}
       </div>
     </div>
-  );
+  )
 }
