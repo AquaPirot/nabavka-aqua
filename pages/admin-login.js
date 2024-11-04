@@ -1,4 +1,3 @@
-// pages/admin-login.js
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 
@@ -11,13 +10,13 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-   const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {  // Dodali smo 'async' ovde
     e.preventDefault();
     setError('');
     setLoading(true);
     
     try {
-      console.log('Pokušaj prijave:', formData); // Debugging
+      console.log('Pokušaj prijave:', formData);
       
       const res = await fetch('/api/auth/admin-login', {
         method: 'POST',
@@ -27,10 +26,10 @@ export default function AdminLogin() {
         body: JSON.stringify(formData),
       });
 
-      console.log('Status odgovora:', res.status); // Debugging
+      console.log('Status odgovora:', res.status);
       
       const data = await res.json();
-      console.log('Primljeni podaci:', data); // Debugging
+      console.log('Primljeni podaci:', data);
 
       if (!res.ok) {
         throw new Error(data.error || 'Greška pri prijavi');
@@ -39,29 +38,10 @@ export default function AdminLogin() {
       localStorage.setItem('adminToken', data.token);
       localStorage.setItem('adminUser', JSON.stringify(data.user));
       
-      console.log('Login uspešan, redirekcija...'); // Debugging
+      console.log('Login uspešan, redirekcija...');
       router.push('/admin/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Greška pri prijavi');
-      }
-
-      // Sačuvaj token
-      localStorage.setItem('adminToken', data.token);
-      localStorage.setItem('adminUser', JSON.stringify(data.user));
-
-      // Redirekcija na admin dashboard
-      router.push('/admin/dashboard');
-    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -111,13 +91,11 @@ export default function AdminLogin() {
               />
             </div>
           </div>
-
           {error && (
             <div className="text-red-500 text-sm text-center">
               {error}
             </div>
           )}
-
           <div>
             <button
               type="submit"
