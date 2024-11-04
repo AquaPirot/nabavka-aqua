@@ -1,0 +1,63 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Restaurant {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  email     String   @unique
+  password  String
+  address   String?
+  phone     String?
+  active    Boolean  @default(true)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("restaurants")
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  orderNumber   String      @unique
+  restaurant    Restaurant  @relation(fields: [restaurantCode], references: [code])
+  restaurantCode String
+  status        String      @default("novo")
+  notes         String?
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model Item {
+  id        Int         @id @default(autoincrement())
+  code      String      @unique
+  name      String
+  active    Boolean     @default(true)
+  orderItems OrderItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("items")
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   Int
+  item      Item     @relation(fields: [itemCode], references: [code])
+  itemCode  String
+  quantity  Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("order_items")
+}
