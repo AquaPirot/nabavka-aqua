@@ -1,3 +1,4 @@
+// pages/admin-login.js
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 
@@ -10,7 +11,7 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {  // Dodali smo 'async' ovde
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -18,31 +19,31 @@ export default function AdminLogin() {
     try {
       console.log('Pokušaj prijave:', formData);
       
+      // Ključna izmena je ovde - koristimo relativnu putanju
       const res = await fetch('/api/auth/admin-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData)
       });
 
-      console.log('Status odgovora:', res.status);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
       
       const data = await res.json();
-      console.log('Primljeni podaci:', data);
+      console.log('Server response:', data);
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Greška pri prijavi');
-      }
-
-      localStorage.setItem('adminToken', data.token);
-      localStorage.setItem('adminUser', JSON.stringify(data.user));
+      // Čuvamo token i user podatke
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       
-      console.log('Login uspešan, redirekcija...');
+      // Redirekcija na dashboard
       router.push('/admin/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.message);
+      setError('Greška pri prijavi. Pokušajte ponovo.');
     } finally {
       setLoading(false);
     }
