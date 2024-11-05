@@ -13,23 +13,24 @@ export default function OrdersManagement() {
     fetchOrders()
   }, [])
 
-  const fetchOrders = async () => {
-    try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch('/api/admin/orders', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setOrders(data)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+const fetchOrders = async () => {
+  try {
+    const token = localStorage.getItem('adminToken')
+    const res = await fetch('/api/admin/orders', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error)
+    // Osigurajmo da je data niz
+    setOrders(Array.isArray(data) ? data : [])
+  } catch (err) {
+    setError(err.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   const updateOrderStatus = async (orderId, status) => {
     try {
