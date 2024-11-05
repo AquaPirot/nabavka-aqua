@@ -1,5 +1,6 @@
 // pages/api/auth/admin-login.js
-import prisma from '../../../lib/prisma'
+import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient()
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
