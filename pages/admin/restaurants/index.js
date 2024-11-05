@@ -3,15 +3,65 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { Edit, Trash2, Plus, Check, X } from 'lucide-react'
 
-export default function RestaurantsManagement() {
-  const router = useRouter()
-  const [restaurants, setRestaurants] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  
-  useEffect(() => {
-    fetchRestaurants()
-  }, [])
+export default async function handler(req, res) {
+  try {
+    switch (req.method) {
+      case 'POST':
+        console.log('Received restaurant data:', req.body);
+        const { name, code, email, password, address, phone } = req.body;
+        
+        // Validation
+        if (!name || !code || !email || !password) {
+          console.log('Missing required fields');
+          return res.status(400).json({ error: 'Nedostaju obavezna polja' });
+        }
+
+        // Check if exists
+        const exists = await prisma.restaurant.findFirst({
+          where: {
+            OR: [
+              { email },
+              { code }
+            ]
+          }
+        });
+
+        if (exists) {
+          console.log('Restaurant already exists');
+          return res.status(400).json({ error: 'Restoran sa ovim email-om ili kodom već postoji' });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Create restaurant
+        const restaurant = await prisma.restaurant.create({
+          data: {
+            name,
+            code,
+            email,
+            password: hashedPassword,
+            address,
+            phone,
+            active: true
+          }
+        });
+
+        console.log('Restaurant created:', restaurant.id);
+
+        return res.status(201).json({
+          id: restaurant.id,
+          code: restaurant.code,
+          name: restaurant.name
+        });
+
+      // ... ostali case-ovi
+    }
+  } catch (error) {
+    console.error('Restaurant creation error:', error);
+    return res.status(500).json({ error: 'Došlo je do greške' });
+  }
+}
 
 const fetchRestaurants = async () => {
   try {
