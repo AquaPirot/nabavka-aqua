@@ -13,23 +13,24 @@ export default function RestaurantsManagement() {
     fetchRestaurants()
   }, [])
 
-  const fetchRestaurants = async () => {
-    try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch('/api/admin/restaurants', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setRestaurants(data)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+const fetchRestaurants = async () => {
+  try {
+    const token = localStorage.getItem('adminToken')
+    const res = await fetch('/api/admin/restaurants', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error)
+    // Osigurajmo da je data niz
+    setRestaurants(Array.isArray(data) ? data : [])
+  } catch (err) {
+    setError(err.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   const toggleStatus = async (id, currentStatus) => {
     try {
