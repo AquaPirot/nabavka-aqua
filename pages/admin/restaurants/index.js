@@ -29,7 +29,8 @@ export default function RestaurantsManagement() {
       console.log('Fetched data:', data)
       
       if (!res.ok) throw new Error(data.error)
-      setRestaurants(data)
+      // Ovde je ključna promena - uzimamo restaurants niz iz odgovora
+      setRestaurants(data.restaurants || [])
     } catch (err) {
       console.error('Fetch error:', err)
       setError(err.message)
