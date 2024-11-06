@@ -1,45 +1,83 @@
+import prisma from '@/lib/prisma'
+import { hash } from 'bcryptjs'
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true)
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
   }
 
-  // Vraćamo test podatke bez pristupa bazi
-  if (req.method === 'GET') {
-    try {
-      // Provera auth headera
-      const token = req.headers.authorization?.replace('Bearer ', '')
-      console.log('Received token:', token)
+  try {
+    await prisma.$connect()
 
-      if (!token) {
-        return res.status(401).json({ error: 'No token provided' })
+    // GET metoda - različiti odgovori za dashboard i listu
+    if (req.method === 'GET') {
+      // Za dashboard
+      if (req.query.dashboard === 'true') {
+        const total = await prisma.restaurant.count()
+        return res.status(200).json({ total })
+      }
+      
+      // Za listu restorana
+      const restaurants = await prisma.restaurant.findMany({
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          email: true,
+          active: true,
+          _count: {
+            select: { orders: true }
+          }
+        }
+      })
+      return res.status(200).json(restaurants)
+    }
+
+    // Ostale metode ostaju iste...
+    if (req.method === 'POST') {
+      const { name, code, email, password, address, phone } = req.body
+      
+      const existing = await prisma.restaurant.findFirst({
+        where: { OR: [{ email }, { code }] }
+      })
+      
+      if (existing) {
+        return res.status(400).json({
+          error: 'Restoran sa ovim email-om ili kodom već postoji'
+        })
       }
 
-      // Vraćamo mock podatke
-      return res.status(200).json([
-        {
-          id: 1,
-          name: "Test Restoran",
-          code: "TEST1",
-          email: "test@test.com",
-          active: true,
-          _count: { orders: 0 }
+      const hashedPassword = await hash(password, 10)
+      const restaurant = await prisma.restaurant.create({
+        data: {
+          name,
+          code,
+          email,
+          password: hashedPassword,
+          address: address || '',
+          phone: phone || '',
+          active: true
         }
-      ])
-
-    } catch (error) {
-      console.error('API Error:', error)
-      return res.status(500).json({
-        error: 'Server error',
-        message: error.message
       })
-    }
-  }
 
-  return res.status(405).json({ error: 'Method not allowed' })
+      const { password: _, ...restaurantData } = restaurant
+      return res.status(201).json(restaurantData)
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    console.error('API Error:', error)
+    return res.status(500).json({
+      error: 'Greška na serveru',
+      message: error.message
+    })
+  } finally {
+    await prisma.$disconnect()
+  }
 }
