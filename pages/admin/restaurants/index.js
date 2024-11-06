@@ -13,32 +13,41 @@ export default function RestaurantsManagement() {
     fetchRestaurants()
   }, [])
 
-const fetchRestaurants = async () => {
-  try {
-    const token = localStorage.getItem('adminToken')
-    console.log('Fetching with token:', token)
-    
-    const res = await fetch('/api/admin/restaurants', {
-      headers: {
-        'Authorization': `Bearer ${token}`
+ const fetchRestaurants = async () => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      console.log('Fetching with token:', token)
+      
+      if (!token) {
+        router.push('/admin/login')
+        return
       }
-    })
-    
-    console.log('Response status:', res.status)
-    const data = await res.json()
-    console.log('Fetched data:', data)
-    
-    if (!res.ok) throw new Error(data.error || 'Greška pri učitavanju')
-    
+
+      const res = await fetch('/api/admin/restaurants', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      console.log('Response status:', res.status)
+      const data = await res.json()
+      console.log('Fetched data:', data)
+      
+      if (!res.ok) throw new Error(data.error || 'Greška pri učitavanju')
+      
     // Uzimamo restaurants niz iz odgovora
-    setRestaurants(data.restaurants || [])
-  } catch (err) {
-    console.error('Fetch error:', err)
-    setError(err.message)
-  } finally {
-    setLoading(false)
+  setRestaurants(data || [])
+    } catch (err) {
+      console.error('Fetch error:', err)
+      setError(err.message)
+      if (err.message.includes('token')) {
+        router.push('/admin/login')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
-}
+
 
   const toggleStatus = async (id, currentStatus) => {
     try {
