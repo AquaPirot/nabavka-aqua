@@ -2,64 +2,40 @@ import prisma from '@/lib/prisma'
 import { hash } from 'bcryptjs'
 
 export default async function handler(req, res) {
+  console.log('API Request:', {
+    method: req.method,
+    url: req.url,
+    body: req.body,
+    headers: req.headers
+  });
+
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   try {
-    console.log('Attempting database connection...');
-    
-    // Test database connection
-    try {
-      await prisma.$connect();
-      console.log('Database connected successfully');
-    } catch (dbError) {
-      console.error('Database connection error details:', {
-        message: dbError.message,
-        code: dbError.code,
-        meta: dbError.meta
-      });
-      return res.status(500).json({ 
-        error: 'Greška pri povezivanju sa bazom',
-        details: dbError.message,
-        code: dbError.code
-      });
-    }
+    // Test DB connection
+    await prisma.$connect();
 
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-
-    // Logging request details
-    console.log('Request details:', {
-      method: req.method,
-      url: req.url,
-      headers: req.headers,
-      body: req.body
-    });
-
-    // GET request
     if (req.method === 'GET') {
       const restaurants = await prisma.restaurant.findMany();
-      return res.status(200).json({
-        restaurants,
-        total: restaurants.length
-      });
+      console.log(`Found ${restaurants.length} restaurants`);
+      return res.status(200).json({ restaurants });
     }
 
-    // POST request
     if (req.method === 'POST') {
       const { name, code, email, password, address, phone } = req.body;
+      console.log('Creating restaurant:', { name, code, email });
 
+      // Check if exists
       const existing = await prisma.restaurant.findFirst({
-        where: {
-          OR: [
-            { email },
-            { code }
-          ]
-        }
+        where: { OR: [{ email }, { code }] }
       });
 
       if (existing) {
@@ -82,22 +58,18 @@ export default async function handler(req, res) {
       });
 
       const { password: _, ...restaurantData } = restaurant;
+      console.log('Restaurant created:', restaurantData.id);
+      
       return res.status(201).json(restaurantData);
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
 
   } catch (error) {
-    console.error('API error details:', {
-      message: error.message,
-      stack: error.stack,
-      code: error.code
-    });
-    
-    return res.status(500).json({ 
+    console.error('API Error:', error);
+    return res.status(500).json({
       error: 'Greška na serveru',
-      details: error.message,
-      code: error.code
+      message: error.message
     });
   } finally {
     await prisma.$disconnect();
