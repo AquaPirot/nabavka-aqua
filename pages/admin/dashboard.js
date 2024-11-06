@@ -1,4 +1,3 @@
-// pages/admin/dashboard.js
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
@@ -9,29 +8,51 @@ export default function AdminDashboard() {
     newOrders: 0,
     totalOrders: 0
   });
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+          router.push('/admin/login');
+          return;
+        }
+
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        };
+
         // Get restaurants count
-        const resRestaurants = await fetch('/api/admin/restaurants');
+        const resRestaurants = await fetch('/api/admin/restaurants', { headers });
         const restaurantsData = await resRestaurants.json();
         
+        if (!resRestaurants.ok) {
+          throw new Error(restaurantsData.error || 'Greška pri učitavanju restorana');
+        }
+        
         // Get orders count
-        const resOrders = await fetch('/api/admin/orders');
+        const resOrders = await fetch('/api/admin/orders', { headers });
         const ordersData = await resOrders.json();
+        
+        if (!resOrders.ok) {
+          throw new Error(ordersData.error || 'Greška pri učitavanju porudžbina');
+        }
 
         setStats({
           restaurants: restaurantsData.total || 0,
           newOrders: ordersData.newOrders || 0,
           totalOrders: ordersData.total || 0
         });
-
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setError(error.message);
+        if (error.message.includes('token') || error.message.includes('Unauthorized')) {
+          router.push('/admin/login');
+        }
       }
     };
-
     fetchData();
   }, []);
 
@@ -39,6 +60,12 @@ export default function AdminDashboard() {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
       
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="p-6 bg-white rounded-lg shadow">
           <h2 className="text-lg mb-2">Ukupno restorana</h2>
