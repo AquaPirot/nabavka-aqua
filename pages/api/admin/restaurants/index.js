@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma'
 import { hash } from 'bcryptjs'
 
 export default async function handler(req, res) {
+   console.log('API hit:', req.method);
+  
   // CORS headers ostaju isti
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
