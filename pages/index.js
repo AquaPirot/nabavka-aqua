@@ -87,7 +87,7 @@ export default function Home() {
       { name: 'GORKI LIST', unit: 'ml', noVariant: true },
       { name: 'VERMUT', unit: 'ml', noVariant: true }
     ],
-    'VISKIJI': [
+    'VISKI': [
       { name: 'JOHNNIE WALKER RED', unit: 'ml', noVariant: true },
       { name: 'JOHNNIE WALKER BLACK', unit: 'ml', noVariant: true },
       { name: 'JAMESON', unit: 'ml', noVariant: true },
@@ -96,7 +96,7 @@ export default function Home() {
       { name: 'JACK DANIELS', unit: 'ml', noVariant: true },
       { name: 'BALLANTINES', unit: 'ml', noVariant: true }
     ],
-    'BRENDIJI I KONJACI': [
+    'BRENDI I KONJACI': [
       { name: 'COURVOISIER', unit: 'ml', noVariant: true },
       { name: 'HENNESSY', unit: 'ml', noVariant: true }
     ],
@@ -126,9 +126,9 @@ export default function Home() {
       { name: 'MATALJ CHARDONNAY', unit: 'kom', noVariant: true },
       { name: 'ALEKSANDROVIĆ TEMA', unit: 'kom', noVariant: true },
       { name: 'CILIĆ ONYX BELI', unit: 'kom', noVariant: true },
-      { name: 'ĐEURIĆ AKSIOM BELI', unit: 'kom', noVariant: true },
+      { name: 'DEURIĆ AKSIOM BELI', unit: 'kom', noVariant: true },
       { name: 'SPASIĆ LEKCIJA TAMJANIKA', unit: 'kom', noVariant: true },
-      { name: 'RUBIN SAUV BLANC', unit: 'kom', noVariant: true },
+      { name: 'RUBIN SOV BLANC', unit: 'kom', noVariant: true },
       { name: 'RUBIN CHARDONAY', unit: 'kom', noVariant: true },
       { name: 'RUBIN MUSCAT', unit: 'kom', noVariant: true },
       { name: 'LA SASTRERIA BELO', unit: 'kom', noVariant: true },
@@ -186,8 +186,8 @@ export default function Home() {
       case 'ROZE VINA':
       case 'VINA 0,187L': return <Wine className="w-6 h-6 text-rose-600" />;
       case 'ŽESTOKA PIĆA':
-      case 'VISKIJI':
-      case 'BRENDIJI I KONJACI':
+      case 'VISKI':
+      case 'BRENDI I KONJACI':
       case 'LIKERI':
       case 'DOMAĆA ALKOHOLNA PIĆA': return <GlassWater className="w-6 h-6 text-purple-600" />;
       default: return null;
