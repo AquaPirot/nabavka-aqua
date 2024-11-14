@@ -141,7 +141,7 @@ export default function Home() {
       { name: 'RADOVANOVIĆ CABERNET', unit: 'kom', noVariant: true },
       { name: 'RADOVANOVIĆ SUVIGNON', unit: 'kom', noVariant: true },
       { name: 'CILIĆ ONYX CRVENO', unit: 'kom', noVariant: true },
-      { name: 'ĐEURIĆ AKSIOM CRVENI', unit: 'kom', noVariant: true },
+      { name: 'DEURIĆ AKSIOM CRVENI', unit: 'kom', noVariant: true },
       { name: 'SPASIĆ DESPOT', unit: 'kom', noVariant: true },
       { name: 'MATALJ KREMEN', unit: 'kom', noVariant: true },
       { name: 'ALEKSANDROVIĆ PROKUPAC', unit: 'kom', noVariant: true },
@@ -149,7 +149,6 @@ export default function Home() {
       { name: 'RUBIN DOB.BAR. SUV', unit: 'kom', noVariant: true },
       { name: 'RUBIN DOB.BAR. CAB', unit: 'kom', noVariant: true },
       { name: 'RUBIN AMANTE CARMEN', unit: 'kom', noVariant: true },
-      { name: 'DESPOTIKA NEMIR', unit: 'kom', noVariant: true },
       { name: 'JOVIĆ CABERNET', unit: 'kom', noVariant: true },
       { name: 'JOVIĆ VRANAC', unit: 'kom', noVariant: true },
       { name: 'LA SASTRERIA CRVENO', unit: 'kom', noVariant: true },
@@ -162,6 +161,7 @@ export default function Home() {
     ],
     'ROZE VINA': [
       { name: 'RUBIN ROSE 0,7', unit: 'kom', noVariant: true },
+      { name: 'DESPOTIKA NEMIR', unit: 'kom', noVariant: true },
       { name: 'MATALJ DUSICA', unit: 'kom', noVariant: true },
       { name: 'RUBIN VRONSKY 0,7', unit: 'kom', noVariant: true }
     ],
