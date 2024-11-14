@@ -61,6 +61,7 @@ export default function Home() {
     'PIVA': [
       { name: 'TUBORG 0.3', unit: 'kom', noVariant: true },
       { name: 'LAV PREMIUM 0.3', unit: 'kom', noVariant: true },
+      { name: 'TOČENO LAV PREMIUM 30l', unit: 'kom', noVariant: true },
       { name: 'CARLSBERG 0.25', unit: 'kom', noVariant: true },
       { name: 'ERDINGER', unit: 'kom', noVariant: true },
       { name: 'BLANC - KRONENBURG', unit: 'kom', noVariant: true },
