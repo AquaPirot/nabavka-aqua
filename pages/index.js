@@ -15,8 +15,8 @@ export default function Home() {
         'Nana',
         'Kamilica', 
         'Zeleni',
-        'Crni',
-        'Voćni',
+        'Jagoda & Jogurt',
+        'Voćni MIX',
         'Jabuka & Cimet',
         'Ostalo'
       ]},
