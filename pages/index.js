@@ -152,6 +152,7 @@ export default function Home() {
       { name: 'RUBIN AMANTE CARMEN', unit: 'kom', noVariant: true },
       { name: 'JOVIĆ CABERNET', unit: 'kom', noVariant: true },
       { name: 'JOVIĆ VRANAC', unit: 'kom', noVariant: true },
+      { name: 'PROCORDE VRANAC', unit: 'kom', noVariant: true },
       { name: 'LA SASTRERIA CRVENO', unit: 'kom', noVariant: true },
       { name: 'CILIĆ MORAVA', unit: 'kom', noVariant: true },
       { name: 'CILIĆ cabernet & merlot', unit: 'kom', noVariant: true },
