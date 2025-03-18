@@ -82,7 +82,7 @@ export default function NewOrder() {
     const newItems = [...selectedItems]
     newItems[index] = {
       ...newItems[index],
-      [field]: value
+      [field]: field === 'quantity' ? parseFloat(value) || 0 : value
     }
     setSelectedItems(newItems)
   }
@@ -139,9 +139,10 @@ export default function NewOrder() {
                     </label>
                     <input
                       type="number"
-                      min="1"
+                      min="0.01"
+                      step="0.01"
                       value={selectedItem.quantity}
-                      onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value, 10))}
+                      onChange={(e) => updateItem(index, 'quantity', e.target.value)}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
