@@ -31,20 +31,38 @@ function RestaurantOrders() {
   const addItem = (item) => {
     setOrderItems(prev => ({
       ...prev,
-      [item.id]: (prev[item.id] || 0) + 1
+      [item.id]: parseFloat((prev[item.id] || 0) + 1).toFixed(2)
     }));
   };
 
   const removeItem = (item) => {
     setOrderItems(prev => {
       const newOrder = { ...prev };
-      if (newOrder[item.id] > 1) {
-        newOrder[item.id]--;
+      const currentValue = parseFloat(newOrder[item.id]);
+      if (currentValue > 1) {
+        newOrder[item.id] = (currentValue - 1).toFixed(2);
       } else {
         delete newOrder[item.id];
       }
       return newOrder;
     });
+  };
+
+  const updateItemQuantity = (item, value) => {
+    const quantity = parseFloat(parseFloat(value).toFixed(2));
+    
+    if (quantity > 0) {
+      setOrderItems(prev => ({
+        ...prev,
+        [item.id]: quantity
+      }));
+    } else {
+      setOrderItems(prev => {
+        const newOrder = { ...prev };
+        delete newOrder[item.id];
+        return newOrder;
+      });
+    }
   };
 
   const getItemsByCategory = () => {
@@ -71,7 +89,7 @@ function RestaurantOrders() {
       return {
         itemId: parseInt(itemId),
         name: item.name,
-        quantity,
+        quantity: parseFloat(quantity),
         unit: item.unit
       };
     });
@@ -116,7 +134,7 @@ function RestaurantOrders() {
                 <ShoppingCart className="h-6 w-6" />
                 {Object.keys(orderItems).length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                    {Object.values(orderItems).reduce((a, b) => a + b, 0)}
+                    {Object.values(orderItems).reduce((a, b) => parseFloat(a) + parseFloat(b), 0).toFixed(0)}
                   </span>
                 )}
                 Pregled trebovanja
@@ -168,7 +186,14 @@ function RestaurantOrders() {
                         >
                           <Minus className="h-4 w-4" />
                         </button>
-                        <span className="w-8 text-center">{orderItems[item.id]}</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          value={orderItems[item.id] || ''}
+                          onChange={(e) => updateItemQuantity(item, e.target.value)}
+                          className="w-16 text-center border rounded p-1"
+                        />
                       </>
                     )}
                     <button
@@ -211,7 +236,7 @@ function RestaurantOrders() {
                       <div>
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-gray-500">
-                          Količina: {quantity} {item.unit}
+                          Količina: {parseFloat(quantity).toFixed(2)} {item.unit}
                         </p>
                       </div>
                     </div>
