@@ -210,8 +210,11 @@ export default function Home() {
   }, [categories, searchTerm]);
   
   const updateOrder = (item, value) => {
-    if (value > 0) {
-      setOrders({...orders, [item.name]: value});
+    // Osigurajte da je vrednost broj i da ima najviše 2 decimale
+    const quantity = parseFloat(parseFloat(value).toFixed(2));
+    
+    if (quantity > 0) {
+      setOrders({...orders, [item.name]: quantity});
     } else {
       const newOrders = {...orders};
       delete newOrders[item.name];
@@ -310,8 +313,10 @@ export default function Home() {
                       )}
                       <input
                         type="number"
+                        step="0.01"
+                        min="0.01"
                         value={orders[item.name] || ''}
-                        onChange={(e) => updateOrder(item, parseInt(e.target.value) || 0)}
+                        onChange={(e) => updateOrder(item, parseFloat(e.target.value) || 0)}
                         className="w-16 text-center rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 p-2"
                         placeholder="0"
                       />
