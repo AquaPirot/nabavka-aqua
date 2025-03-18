@@ -3,6 +3,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  output: 'export',  // Dodajte ovu liniju za statički izvoz
   env: {
     APP_URL: process.env.APP_URL,
   },
