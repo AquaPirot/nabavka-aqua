@@ -3,7 +3,6 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'export',
   env: {
     APP_URL: process.env.APP_URL,
   },
