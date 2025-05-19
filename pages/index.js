@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Minus, Plus, Copy, Send, Coffee, Wine, Beer, GlassWater, Search } from 'lucide-react';
+import { Minus, Plus, Copy, Send, Coffee, Wine, Beer, GlassWater, Search, Download } from 'lucide-react';
 
 export default function Home() {
   const [orders, setOrders] = useState({});
@@ -258,6 +258,173 @@ export default function Home() {
     return message;
   };
 
+  // PDF FUNKCIONALNOSTI
+  const generatePDF = async () => {
+    try {
+      const printContent = generatePrintableContent();
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.onafterprint = () => {
+        printWindow.close();
+      };
+    } catch (error) {
+      console.error('Greška pri generiranju PDF-a:', error);
+      alert('Greška pri generiranju PDF-a');
+    }
+  };
+
+  const generatePrintableContent = () => {
+    const currentDate = new Date().toLocaleDateString('sr-RS');
+    
+    let html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Trebovanje ${currentDate}</title>
+        <style>
+          @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+          }
+          
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+          }
+          
+          .header h1 {
+            font-size: 24px;
+            margin: 0 0 10px 0;
+            color: #2563eb;
+          }
+          
+          .category {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+          }
+          
+          .category-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          
+          .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+          }
+          
+          .items-table th,
+          .items-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border: 1px solid #d1d5db;
+          }
+          
+          .items-table th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+          }
+          
+          .quantity {
+            text-align: center;
+            font-weight: bold;
+          }
+          
+          .notes {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+          }
+          
+          .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>📋 TREBOVANJE</h1>
+          <div>${currentDate}</div>
+        </div>`;
+
+    // Dodaj kategorije
+    Object.entries(categories).forEach(([category, items]) => {
+      const categoryOrders = items.filter(item => orders[item.name]);
+      if (categoryOrders.length > 0) {
+        html += `
+          <div class="category">
+            <div class="category-title">${category}</div>
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th style="width: 60%">Artikal</th>
+                  <th style="width: 20%">Količina</th>
+                  <th style="width: 20%">Jedinica</th>
+                </tr>
+              </thead>
+              <tbody>`;
+        
+        categoryOrders.forEach(item => {
+          let itemName = item.name;
+          if (variants[item.name]) {
+            itemName += ` (${variants[item.name]})`;
+          }
+          
+          html += `
+            <tr>
+              <td>${itemName}</td>
+              <td class="quantity">${orders[item.name]}</td>
+              <td>${item.unit}</td>
+            </tr>`;
+        });
+        
+        html += `</tbody></table></div>`;
+      }
+    });
+
+    if (notes.trim()) {
+      html += `
+        <div class="notes">
+          <h3>NAPOMENE:</h3>
+          <div>${notes.replace(/\n/g, '<br>')}</div>
+        </div>`;
+    }
+
+    html += `
+        <div class="footer">
+          Generisano: ${new Date().toLocaleString('sr-RS')}
+        </div>
+      </body>
+      </html>`;
+
+    return html;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
       <div className="max-w-2xl mx-auto">
@@ -359,6 +526,17 @@ export default function Home() {
               <Copy className="h-5 w-5" />
               Kopiraj trebovanje
             </button>
+            
+            {/* NOVO PDF DUGME */}
+            <button
+              onClick={generatePDF}
+              className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl px-6 py-4 hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 font-medium"
+              disabled={Object.keys(orders).length === 0}
+            >
+              <Download className="h-5 w-5" />
+              Sačuvaj kao PDF
+            </button>
+            
             <button
               onClick={() => {
                 const order = generateOrder();
