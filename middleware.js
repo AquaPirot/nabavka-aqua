@@ -9,7 +9,10 @@ export function middleware(request) {
     '/admin-login',
     '/restaurant-login',
     '/api/auth/admin-login',
-    '/api/auth/restaurant-login'
+    '/api/auth/restaurant-login',
+    '/api/test',           // DODANO
+    '/api/test-db',        // DODANO
+    '/api/middleware',     // DODANO
   ]
 
   const path = request.nextUrl.pathname
@@ -64,9 +67,10 @@ export const config = {
     /*
      * Match all request paths except:
      * 1. /api/auth/* (authentication endpoints)
-     * 2. /_next/* (Next.js internals)
-     * 3. /favicon.ico, /site.webmanifest (static files)
+     * 2. /api/test* (test endpoints)  // DODANO
+     * 3. /_next/* (Next.js internals)
+     * 4. /favicon.ico, /site.webmanifest (static files)
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api/auth|api/test|_next/static|_next/image|favicon.ico).*)',
   ],
 }
