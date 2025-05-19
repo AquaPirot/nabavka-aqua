@@ -39,7 +39,7 @@ export default function Home() {
       { name: 'SPRITE', unit: 'kom', noVariant: true },
       { name: 'BITTER', unit: 'kom', noVariant: true },
       { name: 'SCHWEEPS purple, unit: 'kom', noVariant: true },
-      { name: 'TONIK', unit: 'kom', noVariant: true }
+      { name: 'TONIK', unit: 'kom', noVariant: true },
     ],
     'CEDEVITA I ENERGETSKA PIĆA': [
       { name: 'CEDEVITA NARANDŽA', unit: 'kom', noVariant: true },
