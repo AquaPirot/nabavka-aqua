@@ -34,9 +34,11 @@ export default function Home() {
       { name: 'ROMERQUELLE', unit: 'kom', noVariant: true },
       { name: 'KOKA KOLA', unit: 'kom', noVariant: true },
       { name: 'KOKA KOLA zero', unit: 'kom', noVariant: true },
+      { name: 'KOKA KOLA limeta', unit: 'kom', noVariant: true },
       { name: 'FANTA', unit: 'kom', noVariant: true },
       { name: 'SPRITE', unit: 'kom', noVariant: true },
       { name: 'BITTER', unit: 'kom', noVariant: true },
+      { name: 'SCHWEEPS purple, unit: 'kom', noVariant: true },
       { name: 'TONIK', unit: 'kom', noVariant: true }
     ],
     'CEDEVITA I ENERGETSKA PIĆA': [
@@ -111,8 +113,8 @@ export default function Home() {
       { name: 'HAVANA RUM', unit: 'ml', noVariant: true }
     ],
     'DOMAĆA ALKOHOLNA PIĆA': [
-      { name: 'MEGDAN DUNJA', unit: 'ml', noVariant: true },
-      { name: 'MEGDAN ŠLJIVA', unit: 'ml', noVariant: true },
+      { name: 'MEGDAN DUNJA 1l', unit: 'ml', noVariant: true },
+      { name: 'MEGDAN ŠLJIVA 1l', unit: 'ml', noVariant: true },
       { name: 'MEGDAN VILJAMOVKA', unit: 'ml', noVariant: true },
       { name: 'MEGDAN KAJSIJA', unit: 'ml', noVariant: true },
       { name: 'MEGDAN GROŽĐE', unit: 'ml', noVariant: true },
